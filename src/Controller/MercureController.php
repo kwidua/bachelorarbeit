@@ -43,6 +43,6 @@ class MercureController extends AbstractController
 
         $this->publisher->__invoke($update);
 
-        return new Response('published!');
+        return new Response('published a new file!');
     }
 }
