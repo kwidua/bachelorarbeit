@@ -7,8 +7,13 @@
 
 // any CSS you import will output into a single css file (app.css in this case)
 import '../css/app.css';
+import React from 'react';
+import { render } from 'react-dom'
+import {MercureApp} from "./components/MercureApp";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
+console.log('foooo')
+console.log(document.getElementById('mercure-app'))
 
-console.log('Hello Webpack Encore! Edit me in assets/js/app.js');
+render(<MercureApp />, document.getElementById('mercure-app'));
