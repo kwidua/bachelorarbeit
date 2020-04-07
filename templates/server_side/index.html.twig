@@ -9,15 +9,21 @@
 </style>
 
 <div class="example-wrapper">
-    <h2>Chat Topics</h2>
+    <h2>Chat Channels</h2>
 
     <ul>
-    {% for file in files %}
-        <li><a href="/update/{{ file.name }}">{{ file.name }}</a></li>
-    {% endfor %}
+        {% for channel in channels %}
+        <li><a href="/channel/{{ channel.name }}">{{ channel.name }}</a></li>
+        {% endfor %}
     </ul>
 
-    <a href="/new">New Topic</a>
+{#    <ul>#}
+{#    {% for message in messages %}#}
+{#        <li>{{ message.user }}: {{ message.message }}</li>#}
+{#    {% endfor %}#}
+{#    </ul>#}
+
+    <a href="/new">New Channel</a>
 
 </div>
 {% endblock %}

@@ -19,6 +19,12 @@ class ChannelRepository extends ServiceEntityRepository
         parent::__construct($registry, Channel::class);
     }
 
+    public function save(Channel $channel)
+    {
+        $this->getEntityManager()->persist($channel);
+        $this->getEntityManager()->flush();
+    }
+
     // /**
     //  * @return Channel[] Returns an array of Channel objects
     //  */

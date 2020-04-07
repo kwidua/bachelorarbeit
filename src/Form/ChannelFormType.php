@@ -2,19 +2,18 @@
 
 namespace App\Form;
 
-use App\Entity\File;
+use App\Entity\Channel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class FileFormType extends AbstractType
+class ChannelFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
             ->add('name')
-            ->add('content')
             ->add('submit', SubmitType::class)
         ;
     }
@@ -22,7 +21,7 @@ class FileFormType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => File::class,
+            'data_class' => Channel::class,
         ]);
     }
 }

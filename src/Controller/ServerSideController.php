@@ -2,9 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\File;
-use App\Form\FileFormType;
-use App\Repository\FileRepository;
+use App\Entity\Channel;
+use App\Entity\Message;
+use App\Form\ChannelFormType;
+use App\Form\MessageFormType;
+use App\Repository\ChannelRepository;
+use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,13 +15,19 @@ use Symfony\Component\Routing\Annotation\Route;
 class ServerSideController extends AbstractController
 {
     /**
-     * @var FileRepository
+     * @var MessageRepository
      */
-    private $fileRepository;
+    private $messageRepository;
 
-    public function __construct(FileRepository $fileRepository)
+    /**
+     * @var ChannelRepository
+     */
+    private $channelRepository;
+
+    public function __construct(MessageRepository $messageRepository, ChannelRepository $channelRepository)
     {
-        $this->fileRepository = $fileRepository;
+        $this->messageRepository = $messageRepository;
+        $this->channelRepository = $channelRepository;
     }
 
     /**
@@ -26,53 +35,61 @@ class ServerSideController extends AbstractController
      */
     public function index()
     {
-        $files = $this->fileRepository->findAll();
+        $messages = $this->messageRepository->findAll();
+        $channels = $this->channelRepository->findAll();
 
 
         return $this->render('server_side/index.html.twig', [
             'controller_name' => 'ServerSideController',
-            'files' => $files,
+            'channels' => $channels,
         ]);
     }
 
     /**
      * @Route("/new", name="new")
      */
-    public function newFile(Request $request)
+    public function newChannel(Request $request)
     {
-        $file = new File();
-        $form = $this->createForm(FileFormType::class, $file);
+        $channel = new Channel();
+        $form = $this->createForm(ChannelFormType::class, $channel);
 
         $form->handleRequest($request);
         if ($form->isSubmitted()) {
             $name = $form['name']->getData();
-            $content = $form['content']->getData();
-            $file->setName($name);
-            $file->setContent($content);
-            $this->fileRepository->save($file);
+            $channel->setName($name);
+            $this->channelRepository->save($channel);
         }
 
-        return $this->render('server_side/newFile.html.twig', [
-            'file_form' => $form->createView(),
+        return $this->render('server_side/newChannel.html.twig', [
+            'channel_form' => $form->createView(),
         ]);
     }
 
     /**
-     * @Route("/update/{name}", name="update")
+     * @Route("/channel/{channelName}", name="chat")
      */
-    public function updateFile(File $file, Request $request)
+    public function chat(string $channelName, Request $request)
     {
-        $form = $this->createForm(FileFormType::class, $file);
+        $message = new Message();
+        $channel = $this->channelRepository->findOneBy(['name' => $channelName]);
+        $form = $this->createForm(MessageFormType::class, $message);
 
         $form->handleRequest($request);
-
         if ($form->isSubmitted()) {
-            $this->fileRepository->update($file);
-            return $this->redirectToRoute('home');
+            $message->setChannel($channel);
+            $message->setTimestamp(date("F j, Y, g:i a"));
+            $message->setMessage($form['message']->getData());
+            $message->setUser($this->getUser());
+            $this->messageRepository->save($message);
         }
 
-        return $this->render('server_side/newFile.html.twig', [
-            'file_form' => $form->createView(),
+        $messages = $this->messageRepository->findBy(['channel' => $channel]);
+
+        return $this->render('server_side/chat.html.twig', [
+            'message_form' => $form->createView(),
+            'channel' => $channelName,
+            'messages' => $messages,
+            'user' => $this->getUser(),
         ]);
     }
 }

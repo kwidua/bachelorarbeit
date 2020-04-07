@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ServerSideController!{% endblock %}
+
+{% block body %}
+    Channel: {{ channel }}
+
+    <ul>
+        {% for message in messages %}
+            <li>{{ message.timestamp }} - <strong>{{ message.user }}</strong>: {{ message.message }}</li>
+        {% endfor %}
+    </ul>
+    <div>
+        <p>{{ form(message_form) }}</p>
+    </div>
+
+    <a href="/">back</a>
+{% endblock %}

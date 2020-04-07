@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\FileRepository;
+use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
@@ -16,12 +17,12 @@ class MercureController extends AbstractController
      * @var PublisherInterface
      */
     private $publisher;
-    private $fileRepository;
+    private $messageRepository;
 
-    public function __construct(PublisherInterface $publisher, FileRepository $fileRepository)
+    public function __construct(PublisherInterface $publisher, MessageRepository $messageRepository)
     {
         $this->publisher = $publisher;
-        $this->fileRepository = $fileRepository;
+        $this->messageRepository = $messageRepository;
     }
 
     /**
@@ -29,11 +30,11 @@ class MercureController extends AbstractController
      */
     public function index()
     {
-        $files = $this->fileRepository->findAll();
+        $messages = $this->messageRepository->findAll();
 
         return $this->render('mercure/index.html.twig', [
             'controller_name' => 'MercureController',
-            'files' => $files,
+            'files' => $messages,
             'user' => $this->getUser()
         ]);
     }
@@ -43,7 +44,7 @@ class MercureController extends AbstractController
      */
     public function publish()
     {
-        $files = $this->fileRepository->findAll();
+        $messages = $this->messageRepository->findAll();
 
         $update = new Update(
             'http://example.com/files/1',
