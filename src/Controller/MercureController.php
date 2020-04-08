@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
-use App\Repository\FileRepository;
+use App\Entity\Message;
+use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
@@ -18,11 +20,13 @@ class MercureController extends AbstractController
      */
     private $publisher;
     private $messageRepository;
+    private $channelRepository;
 
-    public function __construct(PublisherInterface $publisher, MessageRepository $messageRepository)
+    public function __construct(PublisherInterface $publisher, MessageRepository $messageRepository, ChannelRepository $channelRepository)
     {
         $this->publisher = $publisher;
         $this->messageRepository = $messageRepository;
+        $this->channelRepository = $channelRepository;
     }
 
     /**
@@ -40,24 +44,38 @@ class MercureController extends AbstractController
     }
 
     /**
-     *  @Route("/mercure/publish", name="mercure_publish")
+     *  @Route("/mercure/publish", name="mercure_publish", methods="POST")
      */
-    public function publish()
+    public function publish(Request $request)
     {
-        $messages = $this->messageRepository->findAll();
+        $channel = $this->channelRepository->findOneBy(['name' => 'MercureChannel']);
+        $message = new Message();
+        $message->setUser($this->getUser()->getUsername());
+        $message->setTimestamp(date("F j, Y, g:i a"));
+        $message->setChannel($channel);
+        $message->setMessage($request->request->get('message'));
+        $this->messageRepository->save($message);
+
+//        $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $update = new Update(
             'http://example.com/files/1',
-            json_encode(['message' => 'test', 'timestamp' => time(), 'username' => $this->getUser()->getUsername()])
+            json_encode(['message' => $message->getMessage(), 'timestamp' => date("F j, Y, g:i a"), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel'])
         );
 
         $this->publisher->__invoke($update);
 
-        return new Response('published a new file!');
+        return $this->redirectToRoute('mercure');
     }
 
-    public function save()
+    /**
+     * @Route("/mercure/data", methods="GET")
+     */
+    public function getMessages()
     {
-//        $this->fileRepository->save()
+        $channel = $this->channelRepository->findOneBy(['name' => 'MercureChannel']);
+        $messages = $this->messageRepository->findBy(['channel' => $channel]);
+
+        return new Response(json_encode($messages));
     }
 }

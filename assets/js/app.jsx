@@ -13,7 +13,5 @@ import {MercureApp} from "./components/MercureApp";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
-console.log('foooo')
-console.log(document.getElementById('mercure-app'))
 
 render(<MercureApp />, document.getElementById('mercure-app'));
