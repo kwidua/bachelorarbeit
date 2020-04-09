@@ -48,19 +48,18 @@ class MercureController extends AbstractController
      */
     public function publish(Request $request)
     {
+        $now = new \DateTime();
         $channel = $this->channelRepository->findOneBy(['name' => 'MercureChannel']);
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
-        $message->setTimestamp(date("F j, Y, g:i a"));
+        $message->setTimestamp($now);
         $message->setChannel($channel);
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
-//        $messages = $this->messageRepository->findBy(['channel' => $channel]);
-
         $update = new Update(
             'http://example.com/files/1',
-            json_encode(['message' => $message->getMessage(), 'timestamp' => date("F j, Y, g:i a"), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel'])
+            json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel'])
         );
 
         $this->publisher->__invoke($update);
@@ -76,6 +75,11 @@ class MercureController extends AbstractController
         $channel = $this->channelRepository->findOneBy(['name' => 'MercureChannel']);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
-        return new Response(json_encode($messages));
+        $messageArray = [];
+        foreach ($messages as $message) {
+            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel'];
+        }
+
+        return new Response(json_encode($messageArray));
     }
 }

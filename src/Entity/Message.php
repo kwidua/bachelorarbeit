@@ -22,7 +22,7 @@ class Message
     private $user;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="datetime")
      */
     private $timestamp;
 
@@ -54,12 +54,12 @@ class Message
         return $this;
     }
 
-    public function getTimestamp(): ?string
+    public function getTimestamp(): ?\DateTime
     {
         return $this->timestamp;
     }
 
-    public function setTimestamp(string $timestamp): self
+    public function setTimestamp(\DateTime $timestamp): self
     {
         $this->timestamp = $timestamp;
 

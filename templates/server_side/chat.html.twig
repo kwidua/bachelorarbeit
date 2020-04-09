@@ -7,7 +7,7 @@
 
     <ul>
         {% for message in messages %}
-            <li>{{ message.timestamp }} - <strong>{{ message.user }}</strong>: {{ message.message }}</li>
+            <li>{{ message.timestamp.format('d-m-Y H:i:s') }} - <strong>{{ message.user }}</strong>: {{ message.message }}</li>
         {% endfor %}
     </ul>
     <div>

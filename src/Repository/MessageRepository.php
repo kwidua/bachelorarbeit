@@ -25,6 +25,12 @@ class MessageRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
     }
 
+    public function delete(Message $message)
+    {
+        $this->getEntityManager()->remove($message);
+        $this->getEntityManager()->flush();
+    }
+
     // /**
     //  * @return Message[] Returns an array of Message objects
     //  */

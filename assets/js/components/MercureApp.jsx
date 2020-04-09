@@ -12,9 +12,14 @@ export class MercureApp extends React.Component {
         es.onmessage = e => {
             // Will be called every time an update is published by the server
             const data = JSON.parse(e.data)
-            const b = fetch('http://127.0.0.1:8000/mercure/data', {method: 'GET'}).then(response => response.json())
             this.setState({messages: [...this.state.messages, data]})
         }
+
+        const b = fetch('http://127.0.0.1:8000/mercure/data', {method: 'GET'})
+            .then(response => response.json() )
+            .then(response =>
+                response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
+            )
     }
 
     render() {
