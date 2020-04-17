@@ -10,8 +10,10 @@ import '../css/app.css';
 import React from 'react';
 import { render } from 'react-dom'
 import {MercureApp} from "./components/MercureApp";
+import {WebSocketApp} from "./components/WebSocketApp";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
 
 render(<MercureApp />, document.getElementById('mercure-app'));
+render(<WebSocketApp />, document.getElementById('websocket-app'));

@@ -35,10 +35,8 @@ class ServerSideController extends AbstractController
      */
     public function index()
     {
-        $messages = $this->messageRepository->findAll();
         $channels = $this->channelRepository->findAll();
-
-
+        
         return $this->render('server_side/index.html.twig', [
             'controller_name' => 'ServerSideController',
             'channels' => $channels,
@@ -70,6 +68,7 @@ class ServerSideController extends AbstractController
      */
     public function chat(string $channelName, Request $request)
     {
+        $now = new \DateTime();
         $message = new Message();
         $channel = $this->channelRepository->findOneBy(['name' => $channelName]);
         $form = $this->createForm(MessageFormType::class, $message);
@@ -77,7 +76,7 @@ class ServerSideController extends AbstractController
         $form->handleRequest($request);
         if ($form->isSubmitted()) {
             $message->setChannel($channel);
-            $message->setTimestamp(date("F j, Y, g:i a"));
+            $message->setTimestamp($now);
             $message->setMessage($form['message']->getData());
             $message->setUser($this->getUser());
             $this->messageRepository->save($message);

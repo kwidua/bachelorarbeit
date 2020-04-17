@@ -37,9 +37,7 @@ class MercureController extends AbstractController
         $messages = $this->messageRepository->findAll();
 
         return $this->render('mercure/index.html.twig', [
-            'controller_name' => 'MercureController',
-            'files' => $messages,
-            'user' => $this->getUser()
+            'channel' => array_values($messages)[0]->getChannel()->getName(),
         ]);
     }
 

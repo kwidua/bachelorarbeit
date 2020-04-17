@@ -9,9 +9,9 @@ export class MercureApp extends React.Component {
 
     componentDidMount() {
         const es = new EventSource('http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'));
-        es.onmessage = e => {
+        es.onmessage = event => {
             // Will be called every time an update is published by the server
-            const data = JSON.parse(e.data)
+            const data = JSON.parse(event.data)
             this.setState({messages: [...this.state.messages, data]})
         }
 
@@ -25,8 +25,6 @@ export class MercureApp extends React.Component {
     render() {
 
         return <div>
-            <h2>Channel: </h2>
-
             <ul>
                 {this.state.messages.map(message =>
                     <li key={message.timestamp}>{message.timestamp} - <strong>{message.username}</strong>: {message.message}</li>
