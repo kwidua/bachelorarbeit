@@ -14,6 +14,16 @@ import {WebSocketApp} from "./components/WebSocketApp";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
+const mercure = document.getElementById('mercure-app');
+const websocket = document.getElementById('websocket-app');
 
-render(<MercureApp />, document.getElementById('mercure-app'));
-render(<WebSocketApp />, document.getElementById('websocket-app'));
+if (typeof(mercure) != 'undefined' && mercure != null)
+{
+    render(<MercureApp />, document.getElementById('mercure-app'));
+}
+
+if (typeof(websocket) != 'undefined' && websocket != null)
+{
+    render(<WebSocketApp />, document.getElementById('websocket-app'));
+}
+
