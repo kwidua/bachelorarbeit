@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -33,5 +34,21 @@ class WebSocketController extends AbstractController
             'controller_name' => 'ServerSideController',
             'channels' => $channels,
         ]);
+    }
+
+    /**
+     * @Route("/websocket/data", methods="GET")
+     */
+    public function getMessages()
+    {
+        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketCannel']);
+        $messages = $this->messageRepository->findBy(['channel' => $channel]);
+
+        $messageArray = [];
+        foreach ($messages as $message) {
+            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel'];
+        }
+
+        return new Response(json_encode($messageArray));
     }
 }

@@ -1,20 +1,11 @@
-const app = require("express")()
-const http = require("http").createServer(app)
-const io = require("socket.io")(http)
-// const router = app.Router()
+const WebSocket = require('ws');
 
-io.on("connection", socket => {
-    console.log('connected')
-    socket.on("message", message => {
-        socket.broadcast.emit("message", message)
-    })
+const wss = new WebSocket.Server({ port: 8080 });
 
-    io.on("disconnect", socket => {
-        console.log('disconnected')
-    })
-})
+wss.on('connection', function connection(ws) {
+    ws.on('message', function incoming(message) {
+        console.log('received: %s', message);
+    });
 
-
-http.listen(8080, () => {
-    console.log("listening on *:8080")
-})
+    ws.send('something');
+});
