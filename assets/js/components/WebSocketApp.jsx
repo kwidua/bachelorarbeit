@@ -1,4 +1,5 @@
 import * as React from "react";
+import httpBuildQuery from "../utils/httpBuildQuery";
 
 const WebSocket = require('isomorphic-ws')
 
@@ -54,10 +55,12 @@ export class WebSocketApp extends React.Component {
     }
 
     handleSubmit(event) {
-        console.log(event)
+        fetch(
+            '/websocket/save',
+            {method: 'POST', body: httpBuildQuery({message: this.state.newMessage}), headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
+        )
         const text = document.getElementById('text').value
-        this.setState({newMessage: text})
-        console.log(text)
+        console.log(this.state.newMessage)
         ws.send(text)
         event.preventDefault();
     }

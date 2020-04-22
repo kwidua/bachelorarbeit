@@ -4,9 +4,11 @@
 namespace App\Controller;
 
 
+use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,7 +43,7 @@ class WebSocketController extends AbstractController
      */
     public function getMessages()
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketCannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
@@ -50,5 +52,23 @@ class WebSocketController extends AbstractController
         }
 
         return new Response(json_encode($messageArray));
+    }
+
+    /**
+     * @Route("/websocket/save", methods="POST")
+     */
+    public function saveMessage(Request $request)
+    {
+        $now = new \DateTime();
+        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $message = new Message();
+        $message->setUser($this->getUser()->getUsername());
+        $message->setTimestamp($now);
+        $message->setChannel($channel);
+        $message->setMessage($request->request->get('message'));
+        $this->messageRepository->save($message);
+
+        return $this->redirectToRoute('websocket');
+
     }
 }
