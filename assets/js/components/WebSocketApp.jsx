@@ -1,7 +1,8 @@
 import * as React from "react";
 
 const WebSocket = require('isomorphic-ws')
-const ws = new WebSocket('wss://echo.websocket.org/');
+
+const ws = new WebSocket('ws://localhost:5001/');
 
 export class WebSocketApp extends React.Component {
     constructor(props) {
@@ -10,17 +11,19 @@ export class WebSocketApp extends React.Component {
     }
 
     componentDidMount() {
-        ws.onopen = function open() {
+        ws.onopen = function open(event) {
             console.log('connected');
-            ws.send(Date.now());
+            setTimeout(function () {
+                ws.send('hey!')
+            }, 1000)
         };
 
         ws.onclose = function close() {
             console.log('disconnected');
         };
 
-        ws.onmessage = function incoming(data) {
-            console.log(`message`);
+        ws.onmessage = function incoming(message) {
+            console.log("message:" + message.data);
         };
 
         const b = fetch('http://127.0.0.1:8000/websocket/data', {method: 'GET'})
@@ -34,10 +37,15 @@ export class WebSocketApp extends React.Component {
         return (
             <div>
                 Messages:
+                <ul>
+                    {this.state.messages.map(message =>
+                        <li key={message.timestamp}>{message.timestamp} - <strong>{message.username}</strong>: {message.message}</li>
+                    )}
+                </ul>
 
                 <div>
                     <form onSubmit={event => this.handleSubmit(event)}>
-                        <input type="text" name="name" onChange={event => this.setState({newMessage: event.target.value})} value={this.state.newMessage} />
+                        <input type="text" id="text" name="name" onChange={event => this.setState({newMessage: event.target.value})} value={this.state.newMessage} />
                         <input type="submit" value="Submit"/>
                     </form>
                 </div>
@@ -47,8 +55,10 @@ export class WebSocketApp extends React.Component {
 
     handleSubmit(event) {
         console.log(event)
-        this.setState({newMessage: ''})
-
+        const text = document.getElementById('text').value
+        this.setState({newMessage: text})
+        console.log(text)
+        ws.send(text)
         event.preventDefault();
     }
 }
