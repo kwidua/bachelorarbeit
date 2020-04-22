@@ -14,9 +14,6 @@ export class WebSocketApp extends React.Component {
     componentDidMount() {
         ws.onopen = function open(event) {
             console.log('connected');
-            setTimeout(function () {
-                ws.send('hey!')
-            }, 1000)
         };
 
         ws.onclose = function close() {
@@ -24,6 +21,7 @@ export class WebSocketApp extends React.Component {
         };
 
         ws.onmessage = function incoming(message) {
+            // this.setState({newMessage: message})
             console.log("message:" + message.data);
         };
 
@@ -60,7 +58,7 @@ export class WebSocketApp extends React.Component {
             {method: 'POST', body: httpBuildQuery({message: this.state.newMessage}), headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
         )
         const text = document.getElementById('text').value
-        console.log(this.state.newMessage)
+        // console.log(this.state.newMessage)
         ws.send(text)
         event.preventDefault();
     }
