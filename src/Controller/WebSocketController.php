@@ -8,6 +8,7 @@ use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
@@ -68,7 +69,6 @@ class WebSocketController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
-        return $this->redirectToRoute('websocket');
-
+        return new Response(json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel']));
     }
 }
