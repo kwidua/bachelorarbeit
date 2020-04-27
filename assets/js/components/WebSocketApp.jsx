@@ -20,11 +20,9 @@ export class WebSocketApp extends React.Component {
             console.log('disconnected');
         };
 
-        ws.onmessage = function incoming(message) {
+        ws.onmessage = (message) => {
             const newMessage = JSON.parse(message.data)
-            const li = document.createElement('li')
-            li.appendChild(document.createTextNode(newMessage.timestamp + ' - ' + newMessage.username + ': ' + newMessage.message))
-            document.getElementById('ul').appendChild(li)
+            this.setState({messages: [...this.state.messages, newMessage]})
         };
 
         const b = fetch('http://127.0.0.1:8000/websocket/data', {method: 'GET'})
