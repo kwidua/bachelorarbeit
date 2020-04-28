@@ -1,7 +1,7 @@
 import * as React from "react";
 import socketIOClient from "socket.io-client"
-const socket = socketIOClient("http://localhost:8080")
-var ws = new WebSocket("ws://localhost:8080");
+// const socket = socketIOClient("http://localhost:8080")
+// var ws = new WebSocket("ws://localhost:8080");
 
 export class WebSocketApp extends React.Component {
     constructor(props) {
@@ -18,9 +18,9 @@ export class WebSocketApp extends React.Component {
         //     console.log('hi');
         // };
 
-        ws.onopen = function(e) {
-            console.log("Connection open...");
-        };
+        // ws.onopen = function(e) {
+        //     console.log("Connection open...");
+        // };
 
         // ws.onclose = function (e) {
         //     console.log("Connection closed...");
