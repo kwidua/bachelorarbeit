@@ -8,7 +8,10 @@ export class ServerSentEventsApp extends React.Component {
     }
 
     componentDidMount() {
+        this.eventSource = new EventSource("http://localhost:8000/sse")
 
+        this.eventSource.onmessage = message =>
+            console.log(message.data)
     }
 
     render() {
