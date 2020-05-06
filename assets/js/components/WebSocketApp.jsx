@@ -64,7 +64,6 @@ export class WebSocketApp extends React.Component {
                 }
             )
             const content = await rawResponse.json()
-            console.log(content)
             ws.send(JSON.stringify(content))
         })()
 
