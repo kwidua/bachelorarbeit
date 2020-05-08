@@ -9,15 +9,25 @@ export class ServerSentEventsApp extends React.Component {
     }
 
     componentDidMount() {
-        const es = new EventSource("http://localhost:5000/sse/test")
+        const es = new EventSource("http://localhost:5000")
 
-        es.onopen = () => console.log('open')
-
-        es.onmessage = message => {
-            console.log(JSON.parse(message.data))
+        es.onopen = function () {
+            console.log('this time open')
+        }
+        es.onmessage = function (message) {
+            console.log("message")
             const newMessage = JSON.parse(message.data)
             this.setState({messages: [...this.state.messages, newMessage]})
 
+        }
+
+        es.onerror = function (error) {
+            console.log(error)
+            es.close()
+        };
+
+        es.onclose = function () {
+            console.log('conenction closing')
         }
         const b = fetch('http://127.0.0.1:8000/sse/data', {method: 'GET'})
             .then(response => response.json() )
