@@ -1,13 +1,13 @@
 node_modules:
-	yarn install
+  yarn install
   npm install ws
 
 vendor:
-	composer install
+  composer install
   composer require mercure  
   
 doctrine:
-	php bin/console doctrine:database:create
+  php bin/console doctrine:database:create
   php bin/console make:migration
   php bin/console doctrine:migrations:migrate
 
