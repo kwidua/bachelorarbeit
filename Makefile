@@ -1,18 +1,15 @@
-node_modules:
-  yarn install
-  npm install ws
+node_modules: package.json yarn.lock
+	yarn install
 
-vendor:
-  composer install
-  composer require mercure  
+vendor: composer.json composer.lock
+	composer install  
   
-doctrine:
-  php bin/console doctrine:database:create
-  php bin/console make:migration
-  php bin/console doctrine:migrations:migrate
+doctrine: vendor
+	php bin/console doctrine:database:create
+	php bin/console doctrine:migrations:migrate
 
-start_servers: 
-  symfony serve
-  node assets/js/sse-server.js
-  node assets/js/index.js
-  JWT_KEY='!ChangeMe!' ADDR='localhost:3000' ALLOW_ANONYMOUS=1 CORS_ALLOWED_ORIGINS=* ./mercure
+dev: node_modules vendor doctrine
+	symfony serve
+	node assets/js/sse-server.js
+	node assets/js/index.js
+	JWT_KEY='!ChangeMe!' ADDR='localhost:3000' ALLOW_ANONYMOUS=1 CORS_ALLOWED_ORIGINS=* ./mercure
