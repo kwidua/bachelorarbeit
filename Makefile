@@ -1,17 +1,14 @@
-node_modules:
+node_modules: package.json yarn.lock
 	yarn install
-	npm install ws
 
-vendor:
-	composer install
-	composer require mercure  
+vendor: composer.json composer.lock
+	composer install  
   
-doctrine:
+doctrine: vendor
 	php bin/console doctrine:database:create
-	php bin/console make:migration
 	php bin/console doctrine:migrations:migrate
 
-start_servers: 
+dev: node_modules vendor doctrine
 	symfony serve
 	node assets/js/sse-server.js
 	node assets/js/index.js
