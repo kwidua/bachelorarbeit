@@ -7,10 +7,9 @@ s.on('connection', function (ws) {
         console.log('received:' + message)
 //in http client:
         s.clients.forEach(function (client) {
-            if(client !== ws) {
+            // if(client !== ws) {
                 client.send(message)
-
-            }
+            // }
         })
     })
 
