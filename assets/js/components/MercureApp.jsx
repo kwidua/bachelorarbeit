@@ -8,7 +8,12 @@ export class MercureApp extends React.Component {
     }
 
     componentDidMount() {
-        const es = new EventSource('http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'));
+        const es = new EventSource('http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'),
+            {
+                headers: {
+                'Authorization': 'Bearer !ChangeMe!' ,
+            }
+        });
         es.onmessage = event => {
             // Will be called every time an update is published by the server
             const data = JSON.parse(event.data)

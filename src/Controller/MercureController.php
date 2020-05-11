@@ -57,7 +57,8 @@ class MercureController extends AbstractController
 
         $update = new Update(
             'http://example.com/files/1',
-            json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel'])
+            json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel']),
+            [$this->getUser()]
         );
 
         $this->publisher->__invoke($update);
