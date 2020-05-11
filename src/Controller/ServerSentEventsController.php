@@ -3,64 +3,63 @@
 
 namespace App\Controller;
 
-
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-class WebSocketController extends AbstractController
+class ServerSentEventsController extends AbstractController
 {
     private $messageRepository;
     private $channelRepository;
 
-    public function __construct(PublisherInterface $publisher, MessageRepository $messageRepository, ChannelRepository $channelRepository)
+    public function __construct(MessageRepository $messageRepository, ChannelRepository $channelRepository)
     {
-        $this->publisher = $publisher;
         $this->messageRepository = $messageRepository;
         $this->channelRepository = $channelRepository;
     }
 
     /**
-     * @Route("/websocket", name="websocket")
+     * @Route("/sse", name="sse")
      */
     public function index()
     {
         $channels = $this->channelRepository->findAll();
 
-        return $this->render('websocket/index.html.twig', [
-            'controller_name' => 'ServerSideController',
+        return $this->render('server-sent_events/index.html.twig', [
+            'controller_name' => 'ServerSentEventsController',
             'channels' => $channels,
-        ]);
+        ]
+            );
     }
 
     /**
-     * @Route("/websocket/data", methods="GET")
+     * @Route("/sse/data", methods="GET")
      */
     public function getMessages()
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'SSEChannel']);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
         foreach ($messages as $message) {
-            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel'];
+            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => $channel->getName()];
         }
 
         return new Response(json_encode($messageArray));
     }
 
     /**
-     * @Route("/websocket/save", methods="POST")
+     * @Route("/sse/save", methods="POST")
      */
     public function saveMessage(Request $request)
     {
         $now = new \DateTime();
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'SSEChannel']);
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
@@ -68,6 +67,9 @@ class WebSocketController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
-        return new Response(json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel']));
+        $client = HttpClient::create();
+        $response = $client->request('POST', 'http://localhost:5000/publish', ['body' => json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => $channel->getName()])]);
+
+        return $this->redirectToRoute('sse');
     }
 }
