@@ -68,7 +68,7 @@ class ServerSentEventsController extends AbstractController
         $this->messageRepository->save($message);
 
         $client = HttpClient::create();
-        $response = $client->request('POST', 'http://localhost:5000/sse/test', ['body' => json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => $channel->getName()])]);
+        $response = $client->request('POST', 'http://localhost:5000/publish', ['body' => json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => $channel->getName()])]);
 
         return $this->redirectToRoute('sse');
     }

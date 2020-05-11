@@ -1,5 +1,5 @@
 const server = require('ws').Server
-const s = new server({port: 5001})
+const s = new server({port: 4000})
 const http = require('http').createServer()
 
 s.on('connection', function (ws) {

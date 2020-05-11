@@ -9,16 +9,14 @@ export class ServerSentEventsApp extends React.Component {
     }
 
     componentDidMount() {
-        const es = new EventSource("http://localhost:5000")
+        const es = new EventSource("http://localhost:5000/subscribe")
 
         es.onopen = function () {
-            console.log('this time open')
+            console.log('SSE connection open')
         }
-        es.onmessage = function (message) {
-            console.log("message")
+        es.onmessage = (message) => {
             const newMessage = JSON.parse(message.data)
             this.setState({messages: [...this.state.messages, newMessage]})
-
         }
 
         es.onerror = function (error) {
@@ -27,10 +25,10 @@ export class ServerSentEventsApp extends React.Component {
         };
 
         es.onclose = function () {
-            console.log('conenction closing')
+            console.log('SSE conenction closing')
         }
         const b = fetch('http://127.0.0.1:8000/sse/data', {method: 'GET'})
-            .then(response => response.json() )
+            .then(response => response.json())
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
             )
@@ -40,7 +38,8 @@ export class ServerSentEventsApp extends React.Component {
         return <div>
             <ul>
                 {this.state.messages.map(message =>
-                    <li key={message.timestamp}>{message.timestamp} - <strong>{message.username}</strong>: {message.message}</li>
+                    <li key={message.timestamp}>{message.timestamp} - <strong>{message.username}</strong>: {message.message}
+                    </li>
                 )}
             </ul>
 
@@ -56,20 +55,14 @@ export class ServerSentEventsApp extends React.Component {
     }
 
     handleSubmit(event) {
-        // (async () => {
-        //     const rawResponse = await
-                fetch(
-                '/sse/save',
-                {
-                    method: 'POST',
-                    body: httpBuildQuery({message: this.state.newMessage}),
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-                }
-            )
-            // const content = await rawResponse.json()
-            // console.log(content)
-            // fetch('http://localhost:5000/sse/test', {method: 'POST', body: content, headers: {'Content-Type': 'application/x-www-form-urlencoded'}})
-        // })()
+        fetch(
+            '/sse/save',
+            {
+                method: 'POST',
+                body: httpBuildQuery({message: this.state.newMessage}),
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }
+        )
 
         this.setState({newMessage: ''})
 

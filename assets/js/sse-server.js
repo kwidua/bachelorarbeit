@@ -1,12 +1,10 @@
-
 const http = require("http");
-const express = require('express')
-const app = express()
+const clients = []
 
 var server = http
     .createServer((request, response) => {
         console.log("Requested url: " + request.url);
-            if (request.url.toLowerCase() === "/") {
+        if (request.url.toLowerCase() === "/subscribe") {
             console.log('refresh')
             response.writeHead(200, {
                 Connection: "keep-alive",
@@ -14,32 +12,28 @@ var server = http
                 "Cache-Control": "no-cache",
                 "Access-Control-Allow-Origin": "*",
             })
-            response.end()
-
-            // request.on('data', chunk => {
-            //     console.log(`Data chunk available: ${chunk}`)
-            //     console.log(JSON.parse(chunk))
-            //     response.write('data:')
-            //     response.writeContinue(chunk)
-            //     response.writeContinue('\n\n')
-            // });
-            // response.write('data:' + request + '\n\n')
+            const clientId = Date.now();
+            const newClient = {
+                id: clientId,
+                response
+            };
+            clients.push(newClient);
+            response.write('\n\n')
         }
 
-            if (request.url.toLowerCase() === "/sse/test") {
-                console.log("data")
-                response.write('data:' + '\n\n')
-                response.end()
-            }
+        if (request.url.toLowerCase() === "/publish") {
+            console.log(request)
+
+            let message = ''
+
+            request.on('data', (chunk) => message += chunk)
+            request.on('end', () => {
+                console.log(message)
+                clients.forEach(c => c.response.write('data:' + message + '\n\n'))
+            })
+        }
     })
 
-    server.listen(5000, () => {
-        console.log("Server running ");
-    })
-
-// app.post('/sse/test', function (req, res) {
-//     console.log(req.body)
-// })
-// http.get('http://localhost:8000/sse/test', function (req, res) {
-//     console.log(req)
-// })
+server.listen(5000, () => {
+    console.log("Server running ");
+})

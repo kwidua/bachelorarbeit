@@ -1,7 +1,7 @@
 import * as React from "react";
 import httpBuildQuery from "../utils/httpBuildQuery";
 
-const ws = new WebSocket('ws://localhost:5001/');
+const ws = new WebSocket('ws://localhost:4000/');
 
 export class WebSocketApp extends React.Component {
     constructor(props) {
@@ -11,11 +11,11 @@ export class WebSocketApp extends React.Component {
 
     componentDidMount() {
         ws.onopen = function open(event) {
-            console.log('connected');
+            console.log('ws connected');
         };
 
         ws.onclose = function close() {
-            console.log('disconnected');
+            console.log('ws disconnected');
         };
 
         ws.onmessage = (message) => {
