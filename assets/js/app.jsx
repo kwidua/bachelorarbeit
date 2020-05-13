@@ -11,11 +11,13 @@ import React from 'react';
 import { render } from 'react-dom'
 import {MercureApp} from "./components/MercureApp";
 import {WebSocketApp} from "./components/WebSocketApp";
+import {ServerSentEventsApp} from "./components/ServerSentEventsApp";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
 const mercure = document.getElementById('mercure-app');
 const websocket = document.getElementById('websocket-app');
+const sse = document.getElementById('sse-app');
 
 if (typeof(mercure) != 'undefined' && mercure != null)
 {
@@ -25,5 +27,10 @@ if (typeof(mercure) != 'undefined' && mercure != null)
 if (typeof(websocket) != 'undefined' && websocket != null)
 {
     render(<WebSocketApp />, document.getElementById('websocket-app'));
+}
+
+if (typeof(sse) != 'undefined' && sse != null)
+{
+    render(<ServerSentEventsApp />, document.getElementById('sse-app'));
 }
 
