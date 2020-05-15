@@ -5,6 +5,10 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -58,9 +62,17 @@ class MercureController extends AbstractController
         $update = new Update(
             'http://example.com/files/1',
             json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel']),
-            [$this->getUser()]
+            ['/' + $this->getUser()->getUsername()]
         );
 
+        $token = (new Builder())
+            ->withClaim('mercure', ['subscribe' => sprintf('/%s', $this->getUser()->getUsername())])
+            ->getToken(
+                new Sha256(),
+                new Key('secretKey')
+            );
+
+        new Cookie('mercureAuthorization', $token, null, '/.well-known/mercure', null, false, true, false, 'strict');
         $this->publisher->__invoke($update);
 
         return $this->redirectToRoute('mercure');
