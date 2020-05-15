@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Constraints\Date;
 
 class MercureController extends AbstractController
 {
@@ -40,6 +41,19 @@ class MercureController extends AbstractController
     {
         $messages = $this->messageRepository->findAll();
 
+        $response = $this->json('done');
+
+        $token = (new Builder())
+            ->withClaim('mercure', ['subscribe' => sprintf('/%s', $this->getUser()->getUsername())])
+            ->getToken(
+                new Sha256(),
+                new Key('secretKey')
+            );
+
+        $cookie = new Cookie('mercureAuthorization', $token, (new \DateTime())->add(new \DateInterval('PT24H')), '/.well-known/mercure', null, false, true, false, 'strict');
+
+        $response->headers->setCookie($cookie);
+
         return $this->render('mercure/index.html.twig', [
             'channel' => array_values($messages)[0]->getChannel()->getName(),
         ]);
@@ -59,20 +73,13 @@ class MercureController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
+
         $update = new Update(
             'http://example.com/files/1',
             json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel']),
-            ['/' + $this->getUser()->getUsername()]
+            ['http://example.com/user/' + $this->getUser()->getUsername()]
         );
 
-        $token = (new Builder())
-            ->withClaim('mercure', ['subscribe' => sprintf('/%s', $this->getUser()->getUsername())])
-            ->getToken(
-                new Sha256(),
-                new Key('secretKey')
-            );
-
-        new Cookie('mercureAuthorization', $token, null, '/.well-known/mercure', null, false, true, false, 'strict');
         $this->publisher->__invoke($update);
 
         return $this->redirectToRoute('mercure');
