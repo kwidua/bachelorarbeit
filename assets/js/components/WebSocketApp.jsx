@@ -23,7 +23,7 @@ export class WebSocketApp extends React.Component {
             this.setState({messages: [...this.state.messages, newMessage]})
         };
 
-        const b = fetch('http://127.0.0.1:8000/websocket/data', {method: 'GET'})
+        const b = fetch('http://localhost:8000/websocket/data', {method: 'GET'})
             .then(response => response.json())
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
