@@ -4,16 +4,17 @@ import httpBuildQuery from "../utils/httpBuildQuery";
 export class MercureApp extends React.Component {
     constructor(props) {
         super(props);
+        this.eventSource = null;
         this.state = {messages: [], newMessage: ''}
     }
 
     componentDidMount() {
-        const es = new EventSource(
+        this.eventSource = new EventSource(
             'http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'),
             {withCredentials: true}
         );
 
-        es.onmessage = event => {
+        this.eventSource.onmessage = event => {
             // Will be called every time an update is published by the server
             const data = JSON.parse(event.data)
             console.log(data)
@@ -25,6 +26,12 @@ export class MercureApp extends React.Component {
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
             )
+    }
+
+    componentWillUnmount() {
+        if (this.eventSource) {
+            this.eventSource.close();
+        }
     }
 
     render() {
