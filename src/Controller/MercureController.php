@@ -47,7 +47,17 @@ class MercureController extends AbstractController
                 new Key('!ChangeMe!')
             );
 
-        $cookie = new Cookie('mercureAuthorization', $token, (new \DateTime())->add(new \DateInterval('PT24H')), '/.well-known/mercure', null, false, true, false, 'strict');
+        $cookie = new Cookie(
+            'mercureAuthorization',
+            $token,
+            (new \DateTime())->add(new \DateInterval('PT24H')),
+            '/.well-known/mercure',
+            'localhost',
+            false,
+            true,
+            false,
+            'strict'
+        );
 
         $response = $this->render('mercure/index.html.twig', [
             'channel' => array_values($messages)[0]->getChannel()->getName(),

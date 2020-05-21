@@ -8,7 +8,10 @@ export class MercureApp extends React.Component {
     }
 
     componentDidMount() {
-        const es = new EventSource('http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'), {withCredentials: true});
+        const es = new EventSource(
+            'http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'),
+            {withCredentials: true}
+        );
 
         es.onmessage = event => {
             // Will be called every time an update is published by the server
@@ -17,7 +20,7 @@ export class MercureApp extends React.Component {
             this.setState({messages: [...this.state.messages, data]})
         }
 
-        const b = fetch('http://localhost:8000/mercure/data', {method: 'GET'})
+        const b = fetch('https://localhost:8000/mercure/data', {method: 'GET'})
             .then(response => response.json() )
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
