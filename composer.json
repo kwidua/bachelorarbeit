@@ -85,5 +85,5 @@
             "allow-contrib": false,
             "require": "5.0.*"
         }
-    },
+    }
 }
