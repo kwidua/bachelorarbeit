@@ -9,9 +9,12 @@ use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\Jwt\StaticJwtProvider;
+use Symfony\Component\Mercure\Publisher;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
@@ -40,7 +43,7 @@ class MercureController extends AbstractController
     {
         $messages = $this->messageRepository->findAll();
 
-        $token = (new Builder())
+        $browserClientJwtToken = (new Builder())
             ->withClaim('mercure', ['subscribe' => ['http://example.com/user']])
             ->getToken(
                 new Sha256(),
@@ -49,7 +52,7 @@ class MercureController extends AbstractController
 
         $cookie = new Cookie(
             'mercureAuthorization',
-            $token,
+            $browserClientJwtToken,
             (new \DateTime())->add(new \DateInterval('PT24H')),
             '/.well-known/mercure',
             'localhost',
@@ -60,7 +63,7 @@ class MercureController extends AbstractController
         );
 
         $response = $this->render('mercure/index.html.twig', [
-            'channel' => array_values($messages)[0]->getChannel()->getName(),
+            'channel' => 'MercureChannel',
         ]);
 
         $response->headers->setCookie($cookie);
@@ -82,16 +85,23 @@ class MercureController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
+        $serverJwtToken = (new Builder())
+            ->withClaim('mercure', ['publish' => ['http://example.com/user', 'http://example.com/channels/' . $channel->getName()]])
+            ->getToken(
+                new Sha256(),
+                new Key('!ChangeMe!')
+            );
 
         $update = new Update(
-            'http://example.com/files/1',
+            'http://example.com/channels/' . $channel->getName(),
             json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel']),
-            ['http://example.com/user']
+            ['http://example.com/user', 'http://example.com/channels/' . $channel->getName()]
         );
 
-        $this->publisher->__invoke($update);
+        $publisher = new Publisher("http://localhost:3000/.well-known/mercure", new StaticJwtProvider($serverJwtToken));
+        $publisher($update);
 
-        return $this->redirectToRoute('mercure');
+        return new JsonResponse(['ok' => true]);
     }
 
     /**

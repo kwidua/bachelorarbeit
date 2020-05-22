@@ -13,4 +13,4 @@ dev: node_modules vendor doctrine
 	node assets/js/sse-server.js &
 	node assets/js/index.js &
 	JWT_KEY='!ChangeMe!' ADDR='localhost:3000' ALLOW_ANONYMOUS=1 ./mercure --cors-allowed-origins="https://localhost:8000" &
-	./node_modules/.bin/encore dev-server
+	yarn watch

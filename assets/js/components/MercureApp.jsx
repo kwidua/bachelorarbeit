@@ -10,7 +10,7 @@ export class MercureApp extends React.Component {
 
     componentDidMount() {
         this.eventSource = new EventSource(
-            'http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/files/1'),
+            'http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/channels/MercureChannel'),
             {withCredentials: true}
         );
 
