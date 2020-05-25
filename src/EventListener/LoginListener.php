@@ -7,28 +7,26 @@ use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key;
 use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\Security\Core\Event\AuthenticationEvent;
 
 class LoginListener
 {
+    public $cookies = [];
+
     public function onLogin(AuthenticationEvent $event)
     {
         $token = $event->getAuthenticationToken();
         $roles = $token->getRoleNames();
 
-        if (!array_key_exists('ROLE_USER', $roles)) {
-            return new Response('', 403);
-        }
-
         $browserClientJwtToken = (new Builder())
-            ->withClaim('mercure', ['subscribe' => ['http://example.com/user']])
+            ->withClaim('mercure', ['subscribe' => $roles])
             ->getToken(
                 new Sha256(),
                 new Key('!ChangeMe!')
             );
 
-        $cookie = new Cookie(
+        $this->cookies[] = new Cookie(
             'mercureAuthorization',
             $browserClientJwtToken,
             (new \DateTime())->add(new \DateInterval('PT24H')),
@@ -39,11 +37,14 @@ class LoginListener
             false,
             'strict'
         );
+    }
 
-        $response = new Response();
+    public function onKernelResponse(ResponseEvent $event)
+    {
+        $response = $event->getResponse();
 
-        $response->headers->setCookie($cookie);
-
-        return $response;
+        foreach ($this->cookies as $cookie) {
+            $response->headers->setCookie($cookie);
+        }
     }
 }

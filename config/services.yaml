@@ -32,4 +32,6 @@ services:
 
     App\EventListener\LoginListener:
         tags:
-            - { name: security.authentication.success, event: AuthenticationEvent, method: 'onLogin' }
+            - { name: kernel.event_listener, event: security.authentication.success, method: 'onLogin' }
+            - { name: kernel.event_listener, event: kernel.response, method: 'onKernelResponse' }
+

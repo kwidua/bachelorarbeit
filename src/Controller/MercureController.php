@@ -43,30 +43,9 @@ class MercureController extends AbstractController
     {
         $messages = $this->messageRepository->findAll();
 
-        $browserClientJwtToken = (new Builder())
-            ->withClaim('mercure', ['subscribe' => ['http://example.com/user']])
-            ->getToken(
-                new Sha256(),
-                new Key('!ChangeMe!')
-            );
-
-        $cookie = new Cookie(
-            'mercureAuthorization',
-            $browserClientJwtToken,
-            (new \DateTime())->add(new \DateInterval('PT24H')),
-            '/.well-known/mercure',
-            'localhost',
-            false,
-            true,
-            false,
-            'strict'
-        );
-
         $response = $this->render('mercure/index.html.twig', [
             'channel' => 'MercureChannel',
         ]);
-
-        $response->headers->setCookie($cookie);
 
         return $response;
     }
