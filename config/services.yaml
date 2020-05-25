@@ -29,3 +29,9 @@ services:
     App\EventListener\CorsListener:
         tags:
             - { name: kernel.event_listener, event: kernel.response, method: 'onKernelResponse' }
+
+    App\EventListener\LoginListener:
+        tags:
+            - { name: kernel.event_listener, event: security.authentication.success, method: 'onLogin' }
+            - { name: kernel.event_listener, event: kernel.response, method: 'onKernelResponse' }
+

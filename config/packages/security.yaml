@@ -8,17 +8,22 @@ security:
         backend_users:
             memory:
                 users:
-                    user_a: { password: '$argon2id$v=19$m=65536,t=4,p=1$1W3JOFeHLjsOcj3bkG9Oyg$9thBbDyPhdMr60Pk7VROSjyeA+G6pQDd0raCSO9Hlb4', roles: ['ROLE_USER'] }
-                    user_b: { password: '$argon2id$v=19$m=65536,t=4,p=1$VbccFOZVNaaPIttadOccvw$HjxSi+pU1g1Vl+KpcqAlOVWHwkachrxnL6jB1+7C4MM', roles: ['ROLE_USER'] }
+                    alice: { password: '$argon2id$v=19$m=65536,t=4,p=1$B/h4fgvmxNZ5+1QX3uc4rg$erMmdigXUtyKLU87UpceygUhNUe5Oqt9A/FNtkJiXFY', roles: ['ROLE_USER'] }
+                    bob: { password: '$argon2id$v=19$m=65536,t=4,p=1$hwIuHquhlFW6X61ip445ZQ$AQ+LVE8CBjGHlOSwEVHsc8pU97cuXkl2lNVc0vpcNCM', roles: ['ROLE_USER'] }
+                    chuck: { password: '$argon2id$v=19$m=65536,t=4,p=1$iWbcTGuYd4esMTMKE0tafA$az0SUZLNc2/JioTK3Mz7Edx/a0OX6w9OaEUkkkHWelg', roles: ['ROLE_GUEST'] }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            http_basic:
-                realm: Secured Area
             anonymous: lazy
             provider: backend_users
+            form_login:
+                login_path: login
+                check_path: login
+                default_target_path: home
+            logout:
+                path: logout
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#firewalls-authentication
@@ -29,5 +34,5 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-         - { path: ^/, roles: ROLE_USER }
-        # - { path: ^/profile, roles: ROLE_USER }
+         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

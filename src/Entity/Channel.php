@@ -19,7 +19,7 @@ class Channel
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string")
      */
     private $name;
 
@@ -27,6 +27,11 @@ class Channel
      * @ORM\OneToMany(targetEntity="App\Entity\Message", mappedBy="channel")
      */
     private $messages;
+
+    /**
+     * @ORM\Column(type="simple_array", nullable=true)
+     */
+    private $roles = [];
 
     public function __construct()
     {
@@ -58,26 +63,19 @@ class Channel
         return $this->messages;
     }
 
-    public function addMessage(Message $message): self
+    /**
+     * @return mixed
+     */
+    public function getRoles()
     {
-        if (!$this->messages->contains($message)) {
-            $this->messages[] = $message;
-            $message->setChannel($this);
-        }
-
-        return $this;
+        return $this->roles;
     }
 
-    public function removeMessage(Message $message): self
+    /**
+     * @param mixed $roles
+     */
+    public function setRoles($roles): void
     {
-        if ($this->messages->contains($message)) {
-            $this->messages->removeElement($message);
-            // set the owning side to null (unless already changed)
-            if ($message->getChannel() === $this) {
-                $message->setChannel(null);
-            }
-        }
-
-        return $this;
+        $this->roles = $roles;
     }
 }
