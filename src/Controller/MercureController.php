@@ -2,17 +2,19 @@
 
 namespace App\Controller;
 
+use App\Entity\Channel;
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key;
-use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mercure\Jwt\StaticJwtProvider;
 use Symfony\Component\Mercure\Publisher;
 use Symfony\Component\Mercure\PublisherInterface;
@@ -39,12 +41,16 @@ class MercureController extends AbstractController
     /**
      * @Route("/mercure", name="mercure")
      */
-    public function index()
+    public function index(Request $request)
     {
-        $messages = $this->messageRepository->findAll();
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
 
         $response = $this->render('mercure/index.html.twig', [
-            'channel' => 'MercureChannel',
+            'channel' => $channel->getName(),
         ]);
 
         return $response;
@@ -56,7 +62,14 @@ class MercureController extends AbstractController
     public function publish(Request $request)
     {
         $now = new \DateTime();
-        $channel = $this->channelRepository->findOneBy(['name' => 'MercureChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
+
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
@@ -65,16 +78,16 @@ class MercureController extends AbstractController
         $this->messageRepository->save($message);
 
         $serverJwtToken = (new Builder())
-            ->withClaim('mercure', ['publish' => ['http://example.com/user', 'http://example.com/channels/' . $channel->getName()]])
+            ->withClaim('mercure', ['publish' => $channel->getRoles()])
             ->getToken(
                 new Sha256(),
                 new Key('!ChangeMe!')
             );
 
         $update = new Update(
-            'http://example.com/channels/' . $channel->getName(),
+            'channels/' . $channel->getName(),
             json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel']),
-            ['http://example.com/user', 'http://example.com/channels/' . $channel->getName()]
+            $channel->getRoles()
         );
 
         $publisher = new Publisher("http://localhost:3000/.well-known/mercure", new StaticJwtProvider($serverJwtToken));
@@ -86,9 +99,16 @@ class MercureController extends AbstractController
     /**
      * @Route("/mercure/data", methods="GET")
      */
-    public function getMessages()
+    public function getMessages(Request $request)
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'MercureChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
+
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
@@ -97,5 +117,20 @@ class MercureController extends AbstractController
         }
 
         return new Response(json_encode($messageArray));
+    }
+
+    private function assertIsAllowedToAccess(Channel $channel): void
+    {
+        $isAllowedToPublish = false;
+
+        foreach ($channel->getRoles() as $role) {
+            if ($this->isGranted($role) === true) {
+                $isAllowedToPublish = true;
+            }
+        }
+
+        if ($isAllowedToPublish === false) {
+            throw new AccessDeniedHttpException();
+        }
     }
 }

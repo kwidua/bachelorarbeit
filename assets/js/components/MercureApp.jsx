@@ -5,12 +5,16 @@ export class MercureApp extends React.Component {
     constructor(props) {
         super(props);
         this.eventSource = null;
-        this.state = {messages: [], newMessage: ''}
+        this.state = {messages: [], newMessage: '', channel: null}
     }
 
     componentDidMount() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var channelName = urlParams.get('channel');
+        this.setState({channel: channelName})
+
         this.eventSource = new EventSource(
-            'http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('http://example.com/channels/MercureChannel'),
+            'http://localhost:3000/.well-known/mercure?topic=' + encodeURIComponent('channels/' + channelName),
             {withCredentials: true}
         );
 
@@ -21,11 +25,14 @@ export class MercureApp extends React.Component {
             this.setState({messages: [...this.state.messages, data]})
         }
 
-        const b = fetch('http://localhost:8000/mercure/data', {method: 'GET'})
+        const b = fetch('http://localhost:8000/mercure/data?channel=' + channelName, {method: 'GET'})
             .then(response => response.json() )
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
             )
+            .catch(error => {
+                alert('Cannot access Messages')
+            })
     }
 
     componentWillUnmount() {
@@ -54,7 +61,7 @@ export class MercureApp extends React.Component {
 
     handleSubmit(event) {
         fetch(
-            '/mercure/publish?message',
+            '/mercure/publish?channel=' + this.state.channel,
             {method: 'POST', body: httpBuildQuery({message: this.state.newMessage}), headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
             )
 

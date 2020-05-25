@@ -13,7 +13,13 @@
 
     <ul>
         {% for channel in channels %}
-        <li><a href="/channel/{{ channel.name }}">{{ channel.name }}</a></li>
+            <li><strong>{{ channel.name }}</strong>( {{ channel.roles | join }} )
+            <br>
+                <a href="/channel/{{ channel.name }}">Server Side Rendering</a>,
+                <a href="/mercure?channel={{ channel.name }}">Mercure</a>,
+                <a href="/mercure?channel={{ channel.name }}">WebSocket</a>,
+                <a href="/mercure?channel={{ channel.name }}">SSE</a>
+            </li>
         {% endfor %}
     </ul>
 
@@ -24,6 +30,8 @@
 {#    </ul>#}
 
     <a href="/new">New Channel</a>
+
+    <a href="/logout">Logout</a>
 
 </div>
 {% endblock %}
