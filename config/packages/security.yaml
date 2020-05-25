@@ -10,6 +10,7 @@ security:
                 users:
                     user_a: { password: '$argon2id$v=19$m=65536,t=4,p=1$1W3JOFeHLjsOcj3bkG9Oyg$9thBbDyPhdMr60Pk7VROSjyeA+G6pQDd0raCSO9Hlb4', roles: ['ROLE_USER'] }
                     user_b: { password: '$argon2id$v=19$m=65536,t=4,p=1$VbccFOZVNaaPIttadOccvw$HjxSi+pU1g1Vl+KpcqAlOVWHwkachrxnL6jB1+7C4MM', roles: ['ROLE_USER'] }
+                    user_c: { password: '$argon2id$v=19$m=65536,t=4,p=1$gUXlvifooavFx7Rb3ZbyiA$aevwmShpdztgoG4f+Xz01GKfqGQu+KBIXl55aCmdCeQ', roles: ['ROLE_GUEST'] }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
