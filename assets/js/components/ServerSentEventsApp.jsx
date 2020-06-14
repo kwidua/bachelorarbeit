@@ -5,7 +5,7 @@ import httpBuildQuery from "../utils/httpBuildQuery";
 export class ServerSentEventsApp extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {messages: [], newMessage: ''}
+        this.state = {messages: [], newMessage: '', channel: null}
     }
 
     componentDidMount() {
@@ -15,19 +15,19 @@ export class ServerSentEventsApp extends React.Component {
             console.log('SSE connection open')
         }
         es.onmessage = (message) => {
+            console.log("message")
             const newMessage = JSON.parse(message.data)
             this.setState({messages: [...this.state.messages, newMessage]})
         }
 
         es.onerror = function (error) {
-            console.log(error)
             es.close()
         };
 
         es.onclose = function () {
             console.log('SSE conenction closing')
         }
-        const b = fetch('http://127.0.0.1:8000/sse/data', {method: 'GET'})
+        const b = fetch('http://localhost:8000/sse/data', {method: 'GET'})
             .then(response => response.json())
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))

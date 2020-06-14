@@ -26,6 +26,14 @@ class LoginListener
                 new Key('!ChangeMe!')
             );
 
+        $browserClientJwtTokenSSE = (new Builder())
+            ->withClaim('sse', ['subscribe' => $roles])
+            ->getToken(
+                new Sha256(),
+                new Key('!ChangeMe!')
+            );
+
+
         $this->cookies[] = new Cookie(
             'mercureAuthorization',
             $browserClientJwtToken,
@@ -37,6 +45,20 @@ class LoginListener
             false,
             'strict'
         );
+
+        $this->cookies[] = new Cookie(
+            'sseAuthorization',
+            $browserClientJwtTokenSSE,
+            (new \DateTime())->add(new \DateInterval('PT24H')),
+            '/subscribe',
+            'localhost',
+            false,
+            true,
+            false,
+            'strict'
+        );
+
+
     }
 
     public function onKernelResponse(ResponseEvent $event)

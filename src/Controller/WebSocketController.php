@@ -43,12 +43,12 @@ class WebSocketController extends AbstractController
      */
     public function getMessages()
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'TestChannel']);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
         foreach ($messages as $message) {
-            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel'];
+            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'TestChannel'];
         }
 
         return new Response(json_encode($messageArray));
@@ -60,7 +60,7 @@ class WebSocketController extends AbstractController
     public function saveMessage(Request $request)
     {
         $now = new \DateTime();
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'TestChannel']);
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
@@ -68,6 +68,6 @@ class WebSocketController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
-        return new Response(json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel']));
+        return new Response(json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'TestChannel']));
     }
 }

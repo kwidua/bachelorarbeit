@@ -42,7 +42,7 @@ class ServerSentEventsController extends AbstractController
      */
     public function getMessages()
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'SSEChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'TestChannel']);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
@@ -59,7 +59,7 @@ class ServerSentEventsController extends AbstractController
     public function saveMessage(Request $request)
     {
         $now = new \DateTime();
-        $channel = $this->channelRepository->findOneBy(['name' => 'SSEChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => 'TestChannel']);
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
