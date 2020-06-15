@@ -9,14 +9,19 @@ export class ServerSentEventsApp extends React.Component {
     }
 
     componentDidMount() {
-        const es = new EventSource("http://localhost:5000/subscribe")
+        var urlParams = new URLSearchParams(window.location.search);
+        var channelName = urlParams.get('channel');
+        this.setState({channel: channelName})
+
+        const es = new EventSource("http://localhost:5000/subscribe?topic=" + encodeURIComponent('channels/' + channelName),
+            {withCredentials: true})
 
         es.onopen = function () {
             console.log('SSE connection open')
         }
-        es.onmessage = (message) => {
-            console.log("message")
-            const newMessage = JSON.parse(message.data)
+        es.onmessage = (event) => {
+            console.log(event.data)
+            const newMessage = JSON.parse(event.data)
             this.setState({messages: [...this.state.messages, newMessage]})
         }
 
