@@ -41,9 +41,9 @@ class WebSocketController extends AbstractController
     /**
      * @Route("/websocket/data", methods="GET")
      */
-    public function getMessages()
+    public function getMessages(Request $request)
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'TestChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
@@ -60,7 +60,7 @@ class WebSocketController extends AbstractController
     public function saveMessage(Request $request)
     {
         $now = new \DateTime();
-        $channel = $this->channelRepository->findOneBy(['name' => 'TestChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);

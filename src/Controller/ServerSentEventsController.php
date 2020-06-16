@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ServerSentEventsController extends AbstractController
@@ -46,6 +47,11 @@ class ServerSentEventsController extends AbstractController
     public function getMessages(Request $request)
     {
         $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];

@@ -32,7 +32,7 @@ export class ServerSentEventsApp extends React.Component {
         es.onclose = function () {
             console.log('SSE conenction closing')
         }
-        const b = fetch('http://localhost:8000/sse/data', {method: 'GET'})
+        const b = fetch('http://localhost:8000/sse/data?channel=' + channelName, {method: 'GET'})
             .then(response => response.json())
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
@@ -61,7 +61,7 @@ export class ServerSentEventsApp extends React.Component {
 
     handleSubmit(event) {
         fetch(
-            '/sse/save',
+            '/sse/save?channel=' + this.state.channel,
             {
                 method: 'POST',
                 body: httpBuildQuery({message: this.state.newMessage}),

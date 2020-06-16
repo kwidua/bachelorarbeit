@@ -1,6 +1,7 @@
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const url = require('url');
+require('server-base')
 const subscribers = []
 
 parseCookies = (request) => {
