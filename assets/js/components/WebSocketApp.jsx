@@ -3,7 +3,7 @@ import httpBuildQuery from "../utils/httpBuildQuery";
 
 var urlParams = new URLSearchParams(window.location.search);
 var channelName = urlParams.get('channel');
-const ws = new WebSocket('ws://localhost:4000/subscribe?topic=' + channelName);
+const ws = new WebSocket('ws://localhost:4000/subscribe?topic=' + encodeURIComponent('channels/' + channelName));
 
 export class WebSocketApp extends React.Component {
     constructor(props) {
@@ -12,8 +12,6 @@ export class WebSocketApp extends React.Component {
     }
 
     componentDidMount() {
-        // var urlParams = new URLSearchParams(window.location.search);
-        // var channelName = urlParams.get('channel');
         this.setState({channel: channelName})
 
         ws.onopen = function open(event) {

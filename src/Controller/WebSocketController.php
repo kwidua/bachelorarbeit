@@ -13,6 +13,7 @@ use Lcobucci\JWT\Signer\Key;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
@@ -94,14 +95,13 @@ class WebSocketController extends AbstractController
         $client = HttpClient::create();
         $response = $client->request(
             'POST',
-            'http://localhost:4000/publish',
+            'http://localhost:4001/publish',
             [
                 'auth_bearer' => (string) $serverJwtToken,
                 'body' => $body
             ]
         );
 
-        return $this->redirectToRoute('websocket');
-//        return new Response($body);
+        return new JsonResponse([]);
     }
 }

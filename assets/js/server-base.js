@@ -1,3 +1,5 @@
+const jwt = require("jsonwebtoken");
+
 parseCookies = (request) => {
     var list = {},
         rc = request.headers.cookie;
@@ -31,6 +33,38 @@ function verifySubscriberMatchesAllTopics(update, subscriber) {
     return subscriberMatchesAllTopics;
 }
 
-exports.parseCookies = parseCookies;
+function authorize(request, claimKey, cookieName) {
+    if ('authorization' in request.headers) {
+        const token = request.headers['authorization'].replace('Bearer ', '')
+
+        try {
+            const claim = jwt.verify(token, '!ChangeMe!')
+
+            console.log('\\o/', claim)
+            return claim[claimKey]
+        } catch (e) {
+            console.log('oh noes', e)
+        }
+    }
+
+    const cookies = parseCookies(request)
+
+    if (cookieName in cookies) {
+
+        const token = cookies[cookieName]
+
+        try {
+            const claim = jwt.verify(token, '!ChangeMe!')
+
+            console.log('\\o/', claim)
+            return claim[claimKey]
+        } catch (e) {
+            console.log('oh noes', e)
+        }
+    }
+    return null
+}
+
 exports.verifyPublisherHasClaimToAllTargets = verifyPublisherHasClaimToAllTargets;
 exports.verifySubscriberMatchesAllTopics = verifySubscriberMatchesAllTopics;
+exports.authorize = authorize;

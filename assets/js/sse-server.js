@@ -4,53 +4,8 @@ const url = require('url');
 const base = require('./server-base');
 const subscribers = []
 
-// parseCookies = (request) => {
-//     var list = {},
-//         rc = request.headers.cookie;
-//
-//     rc && rc.split(';').forEach(function( cookie ) {
-//         var parts = cookie.split('=');
-//         list[parts.shift().trim()] = decodeURI(parts.join('='));
-//     });
-//
-//     return list;
-// }
-
-
-function authorize(request) {
-    if ('authorization' in request.headers) {
-        const token = request.headers['authorization'].replace('Bearer ', '')
-
-        try {
-            const claim = jwt.verify(token, '!ChangeMe!')
-
-            console.log('\\o/', claim)
-            return claim['sse']
-        } catch (e) {
-            console.log('oh noes', e)
-        }
-    }
-
-    const cookies = base.parseCookies(request)
-
-    if ('sseAuthorization' in cookies) {
-
-        const token = cookies['sseAuthorization']
-
-        try {
-            const claim = jwt.verify(token, '!ChangeMe!')
-
-            console.log('\\o/', claim)
-            return claim['sse']
-        } catch (e) {
-            console.log('oh noes', e)
-        }
-    }
-    return null
-}
-
 function handleSubscribe(request, response, query) {
-    const claims = authorize(request);
+    const claims = base.authorize(request, 'sse', 'sseAuthorization');
 
     if (claims === null) {
         response.writeHead(401)
@@ -87,7 +42,6 @@ function handleSubscribe(request, response, query) {
     };
     subscribers.push(newSubscriber);
     response.write('\n\n')
-
 }
 
 setInterval(function () {
@@ -95,29 +49,8 @@ setInterval(function () {
     subscribers.forEach(subscriber => subscriber.response.write(':\n\n'))
 }, 10000)
 
-// function verifyPublisherHasClaimToAllTargets(update, targets) {
-//     let publisherHasClaimToAllTargets = true
-//
-//     update.targets.forEach(updateTarget => {
-//         if (targets.indexOf(updateTarget) < 0) {
-//             publisherHasClaimToAllTargets = false
-//         }
-//     })
-//     return publisherHasClaimToAllTargets;
-// }
-//
-// function verifySubscriberMatchesAllTopics(update, subscriber) {
-//     let subscriberMatchesAllTopics = true
-//     update.topics.forEach(updateTopic => {
-//         if (subscriber.topics.indexOf(updateTopic) < 0) {
-//             subscriberMatchesAllTopics = false
-//         }
-//     })
-//     return subscriberMatchesAllTopics;
-// }
-
 function handlePublish(request, response) {
-    const claims = authorize(request);
+    const claims = base.authorize(request, 'sse', 'sseAuthorization');
 
     if (claims === null) {
         response.writeHead(401)
