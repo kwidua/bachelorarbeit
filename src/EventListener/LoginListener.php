@@ -67,7 +67,7 @@ class LoginListener
 
         $this->cookies[] = new Cookie(
             'wsAuthorization',
-            $browserClientJwtTokenSSE,
+            $browserClientJwtTokenWS,
             (new \DateTime())->add(new \DateInterval('PT24H')),
             '/subscribe',
             'localhost',

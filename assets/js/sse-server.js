@@ -1,20 +1,20 @@
 const http = require("http");
 const jwt = require("jsonwebtoken");
 const url = require('url');
-require('server-base')
+const base = require('./server-base');
 const subscribers = []
 
-parseCookies = (request) => {
-    var list = {},
-        rc = request.headers.cookie;
-
-    rc && rc.split(';').forEach(function( cookie ) {
-        var parts = cookie.split('=');
-        list[parts.shift().trim()] = decodeURI(parts.join('='));
-    });
-
-    return list;
-}
+// parseCookies = (request) => {
+//     var list = {},
+//         rc = request.headers.cookie;
+//
+//     rc && rc.split(';').forEach(function( cookie ) {
+//         var parts = cookie.split('=');
+//         list[parts.shift().trim()] = decodeURI(parts.join('='));
+//     });
+//
+//     return list;
+// }
 
 
 function authorize(request) {
@@ -31,7 +31,7 @@ function authorize(request) {
         }
     }
 
-    const cookies = parseCookies(request)
+    const cookies = base.parseCookies(request)
 
     if ('sseAuthorization' in cookies) {
 
@@ -57,7 +57,7 @@ function handleSubscribe(request, response, query) {
         response.write('\n\n')
         return
     }
-
+    console.log(query)
     const topics = [].concat(query['topic']) || []
 
     if (topics.length === 0) {
@@ -95,26 +95,26 @@ setInterval(function () {
     subscribers.forEach(subscriber => subscriber.response.write(':\n\n'))
 }, 10000)
 
-function verifyPublisherHasClaimToAllTargets(update, targets) {
-    let publisherHasClaimToAllTargets = true
-
-    update.targets.forEach(updateTarget => {
-        if (targets.indexOf(updateTarget) < 0) {
-            publisherHasClaimToAllTargets = false
-        }
-    })
-    return publisherHasClaimToAllTargets;
-}
-
-function verifySubscriberMatchesAllTopics(update, subscriber) {
-    let subscriberMatchesAllTopics = true
-    update.topics.forEach(updateTopic => {
-        if (subscriber.topics.indexOf(updateTopic) < 0) {
-            subscriberMatchesAllTopics = false
-        }
-    })
-    return subscriberMatchesAllTopics;
-}
+// function verifyPublisherHasClaimToAllTargets(update, targets) {
+//     let publisherHasClaimToAllTargets = true
+//
+//     update.targets.forEach(updateTarget => {
+//         if (targets.indexOf(updateTarget) < 0) {
+//             publisherHasClaimToAllTargets = false
+//         }
+//     })
+//     return publisherHasClaimToAllTargets;
+// }
+//
+// function verifySubscriberMatchesAllTopics(update, subscriber) {
+//     let subscriberMatchesAllTopics = true
+//     update.topics.forEach(updateTopic => {
+//         if (subscriber.topics.indexOf(updateTopic) < 0) {
+//             subscriberMatchesAllTopics = false
+//         }
+//     })
+//     return subscriberMatchesAllTopics;
+// }
 
 function handlePublish(request, response) {
     const claims = authorize(request);
@@ -139,14 +139,14 @@ function handlePublish(request, response) {
             return
         }
 
-        if (verifyPublisherHasClaimToAllTargets(update, targets) === false) {
+        if (base.verifyPublisherHasClaimToAllTargets(update, targets) === false) {
             response.writeHead(401)
             response.write('\n\n')
             return
         }
 
         subscribers.forEach(subscriber => {
-            if (verifySubscriberMatchesAllTopics(update, subscriber) === true) {
+            if (base.verifySubscriberMatchesAllTopics(update, subscriber) === true) {
                 subscriber.response.write('data:' + JSON.stringify(update.data) + '\n\n')
             }
         })

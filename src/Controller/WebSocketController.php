@@ -7,7 +7,12 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\PublisherInterface;
@@ -68,6 +73,35 @@ class WebSocketController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
-        return new Response(json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'TestChannel']));
+        $serverJwtToken = (new Builder())
+            ->withClaim('ws', ['publish' => $channel->getRoles()])
+            ->getToken(
+                new Sha256(),
+                new Key('!ChangeMe!')
+            );
+
+        $body = json_encode([
+            'data' => [
+                'message' => $message->getMessage(),
+                'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'),
+                'username' => $message->getUser(),
+                'channel' => $channel->getName()
+            ],
+            'topics' => ['channels/' . $channel->getName()],
+            'targets' => $channel->getRoles()
+            ]);
+
+        $client = HttpClient::create();
+        $response = $client->request(
+            'POST',
+            'http://localhost:4000/publish',
+            [
+                'auth_bearer' => (string) $serverJwtToken,
+                'body' => $body
+            ]
+        );
+
+        return $this->redirectToRoute('websocket');
+//        return new Response($body);
     }
 }
