@@ -3,6 +3,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Channel;
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
@@ -13,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -52,6 +54,8 @@ class ServerSentEventsController extends AbstractController
             throw new NotFoundHttpException();
         }
 
+        $this->assertIsAllowedToAccess($channel);
+
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
         $messageArray = [];
@@ -69,6 +73,13 @@ class ServerSentEventsController extends AbstractController
     {
         $now = new \DateTime();
         $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
+
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
@@ -104,5 +115,20 @@ class ServerSentEventsController extends AbstractController
         );
 
         return $this->redirectToRoute('sse');
+    }
+
+    private function assertIsAllowedToAccess(Channel $channel): void
+    {
+        $isAllowedToPublish = false;
+
+        foreach ($channel->getRoles() as $role) {
+            if ($this->isGranted($role) === true) {
+                $isAllowedToPublish = true;
+            }
+        }
+
+        if ($isAllowedToPublish === false) {
+            throw new AccessDeniedHttpException();
+        }
     }
 }

@@ -4,6 +4,7 @@
 namespace App\Controller;
 
 
+use App\Entity\Channel;
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
@@ -16,6 +17,8 @@ use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -52,6 +55,12 @@ class WebSocketController extends AbstractController
         $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
+
         $messageArray = [];
         foreach ($messages as $message) {
             $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'TestChannel'];
@@ -67,6 +76,13 @@ class WebSocketController extends AbstractController
     {
         $now = new \DateTime();
         $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
+        
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
@@ -103,5 +119,20 @@ class WebSocketController extends AbstractController
         );
 
         return new JsonResponse([]);
+    }
+
+    private function assertIsAllowedToAccess(Channel $channel): void
+    {
+        $isAllowedToPublish = false;
+
+        foreach ($channel->getRoles() as $role) {
+            if ($this->isGranted($role) === true) {
+                $isAllowedToPublish = true;
+            }
+        }
+
+        if ($isAllowedToPublish === false) {
+            throw new AccessDeniedHttpException();
+        }
     }
 }

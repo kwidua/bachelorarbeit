@@ -37,6 +37,9 @@ export class ServerSentEventsApp extends React.Component {
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
             )
+            .catch(error => {
+                alert('Cannot access Messages')
+            })
     }
 
     render() {
