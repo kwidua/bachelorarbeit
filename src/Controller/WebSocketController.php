@@ -4,12 +4,21 @@
 namespace App\Controller;
 
 
+use App\Entity\Channel;
 use App\Entity\Message;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
+use Lcobucci\JWT\Builder;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\HttpClient;
+use Symfony\Component\HttpFoundation\Cookie;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Mercure\PublisherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -41,14 +50,20 @@ class WebSocketController extends AbstractController
     /**
      * @Route("/websocket/data", methods="GET")
      */
-    public function getMessages()
+    public function getMessages(Request $request)
     {
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
 
         $messageArray = [];
         foreach ($messages as $message) {
-            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel'];
+            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'TestChannel'];
         }
 
         return new Response(json_encode($messageArray));
@@ -60,7 +75,14 @@ class WebSocketController extends AbstractController
     public function saveMessage(Request $request)
     {
         $now = new \DateTime();
-        $channel = $this->channelRepository->findOneBy(['name' => 'WebsocketChannel']);
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->assertIsAllowedToAccess($channel);
+        
         $message = new Message();
         $message->setUser($this->getUser()->getUsername());
         $message->setTimestamp($now);
@@ -68,6 +90,49 @@ class WebSocketController extends AbstractController
         $message->setMessage($request->request->get('message'));
         $this->messageRepository->save($message);
 
-        return new Response(json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel']));
+        $serverJwtToken = (new Builder())
+            ->withClaim('ws', ['publish' => $channel->getRoles()])
+            ->getToken(
+                new Sha256(),
+                new Key('!ChangeMe!')
+            );
+
+        $body = json_encode([
+            'data' => [
+                'message' => $message->getMessage(),
+                'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'),
+                'username' => $message->getUser(),
+                'channel' => $channel->getName()
+            ],
+            'topics' => ['channels/' . $channel->getName()],
+            'targets' => $channel->getRoles()
+            ]);
+
+        $client = HttpClient::create();
+        $response = $client->request(
+            'POST',
+            'http://localhost:4001/publish',
+            [
+                'auth_bearer' => (string) $serverJwtToken,
+                'body' => $body
+            ]
+        );
+
+        return new JsonResponse([]);
+    }
+
+    private function assertIsAllowedToAccess(Channel $channel): void
+    {
+        $isAllowedToPublish = false;
+
+        foreach ($channel->getRoles() as $role) {
+            if ($this->isGranted($role) === true) {
+                $isAllowedToPublish = true;
+            }
+        }
+
+        if ($isAllowedToPublish === false) {
+            throw new AccessDeniedHttpException();
+        }
     }
 }

@@ -1,15 +1,19 @@
 import * as React from "react";
 import httpBuildQuery from "../utils/httpBuildQuery";
 
-const ws = new WebSocket('ws://localhost:4000/');
+var urlParams = new URLSearchParams(window.location.search);
+var channelName = urlParams.get('channel');
+const ws = new WebSocket('ws://localhost:4000/subscribe?topic=' + encodeURIComponent('channels/' + channelName));
 
 export class WebSocketApp extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {messages: [], newMessage: ''};
+        this.state = {messages: [], newMessage: '', channel: null};
     }
 
     componentDidMount() {
+        this.setState({channel: channelName})
+
         ws.onopen = function open(event) {
             console.log('ws connected');
         };
@@ -23,7 +27,7 @@ export class WebSocketApp extends React.Component {
             this.setState({messages: [...this.state.messages, newMessage]})
         };
 
-        const b = fetch('http://localhost:8000/websocket/data', {method: 'GET'})
+        const b = fetch('http://localhost:8000/websocket/data?channel=' + channelName, {method: 'GET'})
             .then(response => response.json())
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
@@ -56,7 +60,7 @@ export class WebSocketApp extends React.Component {
     handleSubmit(event) {
         (async () => {
             const rawResponse = await fetch(
-                '/websocket/save',
+                '/websocket/save?channel=' + this.state.channel,
                 {
                     method: 'POST',
                     body: httpBuildQuery({message: this.state.newMessage}),

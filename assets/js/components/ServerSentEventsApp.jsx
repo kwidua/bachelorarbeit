@@ -5,33 +5,41 @@ import httpBuildQuery from "../utils/httpBuildQuery";
 export class ServerSentEventsApp extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {messages: [], newMessage: ''}
+        this.state = {messages: [], newMessage: '', channel: null}
     }
 
     componentDidMount() {
-        const es = new EventSource("http://localhost:5000/subscribe")
+        var urlParams = new URLSearchParams(window.location.search);
+        var channelName = urlParams.get('channel');
+        this.setState({channel: channelName})
+
+        const es = new EventSource("http://localhost:5000/subscribe?topic=" + encodeURIComponent('channels/' + channelName),
+            {withCredentials: true})
 
         es.onopen = function () {
             console.log('SSE connection open')
         }
-        es.onmessage = (message) => {
-            const newMessage = JSON.parse(message.data)
+        es.onmessage = (event) => {
+            console.log(event.data)
+            const newMessage = JSON.parse(event.data)
             this.setState({messages: [...this.state.messages, newMessage]})
         }
 
         es.onerror = function (error) {
-            console.log(error)
             es.close()
         };
 
         es.onclose = function () {
             console.log('SSE conenction closing')
         }
-        const b = fetch('http://127.0.0.1:8000/sse/data', {method: 'GET'})
+        const b = fetch('http://localhost:8000/sse/data?channel=' + channelName, {method: 'GET'})
             .then(response => response.json())
             .then(response =>
                 response.map(ab => this.setState({messages: [...this.state.messages, ab]}))
             )
+            .catch(error => {
+                alert('Cannot access Messages')
+            })
     }
 
     render() {
@@ -56,7 +64,7 @@ export class ServerSentEventsApp extends React.Component {
 
     handleSubmit(event) {
         fetch(
-            '/sse/save',
+            '/sse/save?channel=' + this.state.channel,
             {
                 method: 'POST',
                 body: httpBuildQuery({message: this.state.newMessage}),

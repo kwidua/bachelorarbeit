@@ -17,8 +17,8 @@
             <br>
                 <a href="/channel/{{ channel.name }}">Server Side Rendering</a>,
                 <a href="/mercure?channel={{ channel.name }}">Mercure</a>,
-                <a href="/mercure?channel={{ channel.name }}">WebSocket</a>,
-                <a href="/mercure?channel={{ channel.name }}">SSE</a>
+                <a href="/websocket?channel={{ channel.name }}">WebSocket</a>,
+                <a href="/sse?channel={{ channel.name }}">SSE</a>
             </li>
         {% endfor %}
     </ul>
