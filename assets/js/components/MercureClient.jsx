@@ -1,11 +1,11 @@
 import * as React from "react";
 import httpBuildQuery from "../utils/httpBuildQuery";
 
-export class MercureApp extends React.Component {
+export class MercureClient extends React.Component {
     constructor(props) {
         super(props);
         this.eventSource = null;
-        this.state = {messages: [], newMessage: '', channel: null}
+        this.state = {messages: [], newMessage: '', channel: null, testRunning: false, testTimings: []}
     }
 
     componentDidMount() {
@@ -21,7 +21,7 @@ export class MercureApp extends React.Component {
         this.eventSource.onmessage = event => {
             // Will be called every time an update is published by the server
             const data = JSON.parse(event.data)
-            console.log(data)
+            this.recordTestTimings(data)
             this.setState({messages: [...this.state.messages, data]})
         }
 
@@ -46,7 +46,7 @@ export class MercureApp extends React.Component {
         return <div>
             <ul>
                 {this.state.messages.map(message =>
-                    <li key={message.timestamp}>{message.timestamp} - <strong>{message.username}</strong>: {message.message}</li>
+                    <li key={message.id}>{message.timestamp} - <strong>{message.username}</strong>: {message.message}</li>
                 )}
             </ul>
 
@@ -55,6 +55,8 @@ export class MercureApp extends React.Component {
                     <input type="text" name="name" onChange={event => this.setState({newMessage: event.target.value})} value={this.state.newMessage} />
                     <input type="submit" value="Submit"/>
                 </form>
+                <button onClick={event => this.sendRealtimeTestMessages(event)} disabled={this.state.testRunning}>{this.state.testRunning ? 'Realtime Test is running' : 'Start Realtime Test'}</button>
+                {'last Test Average:' + this.getAverageTestTimings() + 'ms'}
             </div>
         </div>
     }
@@ -68,6 +70,37 @@ export class MercureApp extends React.Component {
         this.setState({newMessage: ''})
 
         event.preventDefault();
+    }
+
+    sendRealtimeTestMessages(event) {
+        this.setState({testRunning: true, testTimings: []})
+
+        let count = 0
+        let id
+        id = setInterval(() => {
+            count++
+            fetch(
+                '/mercure/publish?channel=' + this.state.channel,
+                {method: 'POST', body: httpBuildQuery({message: 'RealtimeTest:' + (new Date().getTime())}), headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
+            )
+            if (count === 100) {
+                clearInterval(id)
+                this.setState({testRunning: false})
+            }
+        }, 250)
+    }
+
+    recordTestTimings(data) {
+        if (!data.message.startsWith('RealtimeTest:')) {
+            return
+        }
+        const timestampSend = data.message.split(':')
+        const difference = (new Date().getTime()) - parseInt(timestampSend[1])
+        this.setState({testTimings: [...this.state.testTimings, difference]})
+    }
+
+    getAverageTestTimings() {
+        return this.state.testTimings.reduce((a,b) => a + b, 0) / this.state.testTimings.length
     }
 
 }

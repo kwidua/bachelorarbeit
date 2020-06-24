@@ -9,9 +9,9 @@
 import '../css/app.css';
 import React from 'react';
 import { render } from 'react-dom'
-import {MercureApp} from "./components/MercureApp";
-import {WebSocketApp} from "./components/WebSocketApp";
-import {ServerSentEventsApp} from "./components/ServerSentEventsApp";
+import {MercureClient} from "./components/MercureApp";
+import {WebSocketClient} from "./components/WebSocketApp";
+import {ServerSentEventsClient} from "./components/ServerSentEventsApp";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
@@ -21,16 +21,16 @@ const sse = document.getElementById('sse-app');
 
 if (typeof(mercure) != 'undefined' && mercure != null)
 {
-    render(<MercureApp />, document.getElementById('mercure-app'));
+    render(<MercureClient />, document.getElementById('mercure-app'));
 }
 
 if (typeof(websocket) != 'undefined' && websocket != null)
 {
-    render(<WebSocketApp />, document.getElementById('websocket-app'));
+    render(<WebSocketClient />, document.getElementById('websocket-app'));
 }
 
 if (typeof(sse) != 'undefined' && sse != null)
 {
-    render(<ServerSentEventsApp />, document.getElementById('sse-app'));
+    render(<ServerSentEventsClient />, document.getElementById('sse-app'));
 }
 

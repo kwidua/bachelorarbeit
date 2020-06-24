@@ -12,9 +12,8 @@ function handleSubscribe(request, response, query) {
         response.write('\n\n')
         return
     }
-    console.log(query)
     const topics = [].concat(query['topic']) || []
-
+    console.log(topics)
     if (topics.length === 0) {
         response.writeHead(400)
         response.write('\n\n')

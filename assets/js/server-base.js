@@ -43,7 +43,7 @@ function authorize(request, claimKey, cookieName) {
             console.log('\\o/', claim)
             return claim[claimKey]
         } catch (e) {
-            console.log('oh noes', e)
+            console.log('error', e)
         }
     }
 
@@ -59,7 +59,7 @@ function authorize(request, claimKey, cookieName) {
             console.log('\\o/', claim)
             return claim[claimKey]
         } catch (e) {
-            console.log('oh noes', e)
+            console.log('error', e)
         }
     }
     return null

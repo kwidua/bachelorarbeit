@@ -81,7 +81,6 @@ function handlePublish(request, response) {
         }
 
         wsServer.clients.forEach(ws => {
-
             if (base.verifySubscriberMatchesAllTopics(update, ws.subscriber) === true) {
                 ws.send(JSON.stringify(update.data))
             }

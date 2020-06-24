@@ -57,7 +57,7 @@ class MercureController extends AbstractController
     }
 
     /**
-     *  @Route("/mercure/publish", name="mercure_publish", methods="POST")
+     * @Route("/mercure/publish", name="mercure_publish", methods="POST")
      */
     public function publish(Request $request)
     {
@@ -86,7 +86,7 @@ class MercureController extends AbstractController
 
         $update = new Update(
             'channels/' . $channel->getName(),
-            json_encode(['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $this->getUser()->getUsername(), 'channel' => 'MercureChannel']),
+            json_encode($message),
             $channel->getRoles()
         );
 
@@ -111,12 +111,7 @@ class MercureController extends AbstractController
 
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
-        $messageArray = [];
-        foreach ($messages as $message) {
-            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => 'MercureChannel'];
-        }
-
-        return new Response(json_encode($messageArray));
+        return new Response(json_encode($messages));
     }
 
     private function assertIsAllowedToAccess(Channel $channel): void

@@ -5,7 +5,7 @@ var urlParams = new URLSearchParams(window.location.search);
 var channelName = urlParams.get('channel');
 const ws = new WebSocket('ws://localhost:4000/subscribe?topic=' + encodeURIComponent('channels/' + channelName));
 
-export class WebSocketApp extends React.Component {
+export class WebSocketClient extends React.Component {
     constructor(props) {
         super(props);
         this.state = {messages: [], newMessage: '', channel: null};

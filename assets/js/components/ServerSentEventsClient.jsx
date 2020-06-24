@@ -2,7 +2,7 @@ import * as React from "react";
 import httpBuildQuery from "../utils/httpBuildQuery";
 
 
-export class ServerSentEventsApp extends React.Component {
+export class ServerSentEventsClient extends React.Component {
     constructor(props) {
         super(props);
         this.state = {messages: [], newMessage: '', channel: null}
