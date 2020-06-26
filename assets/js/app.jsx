@@ -9,9 +9,9 @@
 import '../css/app.css';
 import React from 'react';
 import { render } from 'react-dom'
-import {MercureClient} from "./components/MercureApp";
-import {WebSocketClient} from "./components/WebSocketApp";
-import {ServerSentEventsClient} from "./components/ServerSentEventsApp";
+import {MercureClient} from "./components/MercureClient";
+import {WebSocketClient} from "./components/WebSocketClient";
+import {ServerSentEventsClient} from "./components/ServerSentEventsClient";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';

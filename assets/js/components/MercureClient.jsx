@@ -1,11 +1,12 @@
 import * as React from "react";
 import httpBuildQuery from "../utils/httpBuildQuery";
+import {TestTimings} from "./TestTimings";
 
 export class MercureClient extends React.Component {
     constructor(props) {
         super(props);
         this.eventSource = null;
-        this.state = {messages: [], newMessage: '', channel: null, testRunning: false, testTimings: []}
+        this.state = {messages: [], newMessage: '', channel: null, testTimings: []}
     }
 
     componentDidMount() {
@@ -55,8 +56,7 @@ export class MercureClient extends React.Component {
                     <input type="text" name="name" onChange={event => this.setState({newMessage: event.target.value})} value={this.state.newMessage} />
                     <input type="submit" value="Submit"/>
                 </form>
-                <button onClick={event => this.sendRealtimeTestMessages(event)} disabled={this.state.testRunning}>{this.state.testRunning ? 'Realtime Test is running' : 'Start Realtime Test'}</button>
-                {'last Test Average:' + this.getAverageTestTimings() + 'ms'}
+                <TestTimings url={'/mercure/publish?channel=' + this.state.channel} testTimings={this.state.testTimings}/>
             </div>
         </div>
     }
@@ -72,24 +72,6 @@ export class MercureClient extends React.Component {
         event.preventDefault();
     }
 
-    sendRealtimeTestMessages(event) {
-        this.setState({testRunning: true, testTimings: []})
-
-        let count = 0
-        let id
-        id = setInterval(() => {
-            count++
-            fetch(
-                '/mercure/publish?channel=' + this.state.channel,
-                {method: 'POST', body: httpBuildQuery({message: 'RealtimeTest:' + (new Date().getTime())}), headers: {'Content-Type': 'application/x-www-form-urlencoded'}}
-            )
-            if (count === 100) {
-                clearInterval(id)
-                this.setState({testRunning: false})
-            }
-        }, 250)
-    }
-
     recordTestTimings(data) {
         if (!data.message.startsWith('RealtimeTest:')) {
             return
@@ -98,9 +80,4 @@ export class MercureClient extends React.Component {
         const difference = (new Date().getTime()) - parseInt(timestampSend[1])
         this.setState({testTimings: [...this.state.testTimings, difference]})
     }
-
-    getAverageTestTimings() {
-        return this.state.testTimings.reduce((a,b) => a + b, 0) / this.state.testTimings.length
-    }
-
 }
