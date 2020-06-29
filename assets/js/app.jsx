@@ -12,12 +12,14 @@ import { render } from 'react-dom'
 import {MercureClient} from "./components/MercureClient";
 import {WebSocketClient} from "./components/WebSocketClient";
 import {ServerSentEventsClient} from "./components/ServerSentEventsClient";
+import {XhrPollingClient} from "./components/XhrPollingClient";
 
 // Need jQuery? Install it with "yarn add jquery", then uncomment to import it.
 // import $ from 'jquery';
 const mercure = document.getElementById('mercure-app');
 const websocket = document.getElementById('websocket-app');
 const sse = document.getElementById('sse-app');
+const xhr = document.getElementById('xhr-app');
 
 if (typeof(mercure) != 'undefined' && mercure != null)
 {
@@ -34,3 +36,7 @@ if (typeof(sse) != 'undefined' && sse != null)
     render(<ServerSentEventsClient />, document.getElementById('sse-app'));
 }
 
+if (typeof(xhr) != 'undefined' && xhr != null)
+{
+    render(<XhrPollingClient />, document.getElementById('xhr-app'));
+}

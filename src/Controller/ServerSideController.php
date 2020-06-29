@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Entity\Channel;
 use App\Entity\Message;
 use App\Form\ChannelFormType;
-use App\Form\MessageFormType;
 use App\Repository\ChannelRepository;
 use App\Repository\MessageRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\HttpClient;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class ServerSideController extends AbstractController
@@ -36,7 +38,7 @@ class ServerSideController extends AbstractController
     public function index()
     {
         $channels = $this->channelRepository->findAll();
-        
+
         return $this->render('server_side/index.html.twig', [
             'controller_name' => 'ServerSideController',
             'channels' => $channels,
@@ -64,31 +66,59 @@ class ServerSideController extends AbstractController
     }
 
     /**
-     * @Route("/channel/{channelName}", name="chat")
+     * @Route("/xhr", name="xhr")
      */
-    public function chat(string $channelName, Request $request)
+    public function chat()
     {
-        $now = new \DateTime();
-        $message = new Message();
-        $channel = $this->channelRepository->findOneBy(['name' => $channelName]);
-        $form = $this->createForm(MessageFormType::class, $message);
+        $channels = $this->channelRepository->findAll();
 
-        $form->handleRequest($request);
-        if ($form->isSubmitted()) {
-            $message->setChannel($channel);
-            $message->setTimestamp($now);
-            $message->setMessage($form['message']->getData());
-            $message->setUser($this->getUser());
-            $this->messageRepository->save($message);
+        return $this->render('server_side/chat.html.twig', [
+                'controller_name' => 'ServerSideController',
+                'channels' => $channels,
+            ]
+        );
+    }
+
+    /**
+     * @Route("/xhr/data", methods="GET")
+     */
+    public function getMessages(Request $request)
+    {
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
         }
 
         $messages = $this->messageRepository->findBy(['channel' => $channel]);
 
-        return $this->render('server_side/chat.html.twig', [
-            'message_form' => $form->createView(),
-            'channel' => $channelName,
-            'messages' => $messages,
-            'user' => $this->getUser(),
-        ]);
+        $messageArray = [];
+        foreach ($messages as $message) {
+            $messageArray[] = ['message' => $message->getMessage(), 'timestamp' => $message->getTimestamp()->format('d-m-Y H:i:s'), 'username' => $message->getUser(), 'channel' => $channel->getName()];
+        }
+
+        return new Response(json_encode($messageArray));
+    }
+
+    /**
+     * @Route("/xhr/save", methods="POST")
+     */
+    public function saveMessage(Request $request)
+    {
+        $now = new \DateTime();
+        $channel = $this->channelRepository->findOneBy(['name' => $request->query->get('channel')]);
+
+        if ($channel === null) {
+            throw new NotFoundHttpException();
+        }
+
+        $message = new Message();
+        $message->setUser($this->getUser()->getUsername());
+        $message->setTimestamp($now);
+        $message->setChannel($channel);
+        $message->setMessage($request->request->get('message'));
+        $this->messageRepository->save($message);
+
+        return $this->redirectToRoute('xhr');
     }
 }
