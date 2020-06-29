@@ -1,11 +1,12 @@
 import * as React from "react";
 import httpBuildQuery from "../utils/httpBuildQuery";
+import {TestTimings} from "./TestTimings";
 
 
 export class ServerSentEventsClient extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {messages: [], newMessage: '', channel: null}
+        this.state = {messages: [], newMessage: '', channel: null, testTimings: []}
     }
 
     componentDidMount() {
@@ -33,6 +34,7 @@ export class ServerSentEventsClient extends React.Component {
                            value={this.state.newMessage}/>
                     <input type="submit" value="Submit"/>
                 </form>
+                <TestTimings url={'/mercure/publish?channel=' + this.state.channel} testTimings={this.state.testTimings}/>
             </div>
         </div>
     }
@@ -73,6 +75,7 @@ export class ServerSentEventsClient extends React.Component {
         }
         es.onmessage = (event) => {
             const newMessage = JSON.parse(event.data)
+            this.recordTestTimings(newMessage)
             this.setState({messages: [...this.state.messages, newMessage]})
         }
 
@@ -83,6 +86,15 @@ export class ServerSentEventsClient extends React.Component {
         es.onclose = function () {
             console.log('SSE conenction closing')
         }
+    }
+
+    recordTestTimings(data) {
+        if (!data.message.startsWith('RealtimeTest:')) {
+            return
+        }
+        const timestampSend = data.message.split(':')
+        const difference = (new Date().getTime()) - parseInt(timestampSend[1])
+        this.setState({testTimings: [...this.state.testTimings, difference]})
     }
 
 }

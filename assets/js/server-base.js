@@ -30,6 +30,7 @@ function verifySubscriberMatchesAllTopics(update, subscriber) {
             subscriberMatchesAllTopics = false
         }
     })
+
     return subscriberMatchesAllTopics;
 }
 

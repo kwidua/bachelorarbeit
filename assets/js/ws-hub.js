@@ -81,6 +81,9 @@ function handlePublish(request, response) {
         }
 
         wsServer.clients.forEach(ws => {
+            if(!ws.subscriber.targets.includes('ROLE_USER')) {
+                return;
+            }
             if (base.verifySubscriberMatchesAllTopics(update, ws.subscriber) === true) {
                 ws.send(JSON.stringify(update.data))
             }

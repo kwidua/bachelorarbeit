@@ -13,7 +13,7 @@ function handleSubscribe(request, response, query) {
         return
     }
     const topics = [].concat(query['topic']) || []
-    console.log(topics)
+    // console.log(topics)
     if (topics.length === 0) {
         response.writeHead(400)
         response.write('\n\n')
@@ -78,6 +78,9 @@ function handlePublish(request, response) {
         }
 
         subscribers.forEach(subscriber => {
+            if(!subscriber.targets.includes('ROLE_USER')) {
+                return;
+            }
             if (base.verifySubscriberMatchesAllTopics(update, subscriber) === true) {
                 subscriber.response.write('data:' + JSON.stringify(update.data) + '\n\n')
             }
