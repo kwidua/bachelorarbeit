@@ -8,11 +8,6 @@ export class TestTimings extends React.Component {
         this.state = {testRunning: false}
     }
 
-    // static propTypes = {
-    //     url: PropTypes.string,
-    //     testTimings: []
-    // }
-
     render() {
         return <div>
         <button onClick={event => this.sendRealtimeTestMessages(event)} disabled={this.state.testRunning}>{this.state.testRunning ? 'Realtime Test is running' : 'Start Realtime Test'}</button>

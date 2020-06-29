@@ -24,6 +24,7 @@ export class WebSocketClient extends React.Component {
         };
 
         ws.onmessage = (message) => {
+            console.log('foo')
             const newMessage = JSON.parse(message.data)
             this.recordTestTimings(newMessage)
             this.setState({messages: [...this.state.messages, newMessage]})
@@ -54,7 +55,7 @@ export class WebSocketClient extends React.Component {
                                value={this.state.newMessage}/>
                         <input type="submit" value="Submit"/>
                     </form>
-                    <TestTimings url={'/mercure/publish?channel=' + this.state.channel} testTimings={this.state.testTimings}/>
+                    <TestTimings url={'/websocket/save?channel=' + this.state.channel} testTimings={this.state.testTimings}/>
                 </div>
             </div>
         );

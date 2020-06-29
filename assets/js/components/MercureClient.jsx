@@ -20,7 +20,6 @@ export class MercureClient extends React.Component {
         );
 
         this.eventSource.onmessage = event => {
-            // Will be called every time an update is published by the server
             const data = JSON.parse(event.data)
             this.recordTestTimings(data)
             this.setState({messages: [...this.state.messages, data]})

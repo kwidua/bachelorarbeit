@@ -34,7 +34,7 @@ export class ServerSentEventsClient extends React.Component {
                            value={this.state.newMessage}/>
                     <input type="submit" value="Submit"/>
                 </form>
-                <TestTimings url={'/mercure/publish?channel=' + this.state.channel} testTimings={this.state.testTimings}/>
+                <TestTimings url={'/sse/save?channel=' + this.state.channel} testTimings={this.state.testTimings}/>
             </div>
         </div>
     }
