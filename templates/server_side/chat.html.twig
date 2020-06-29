@@ -3,18 +3,7 @@
 {% block title %}Hello ServerSideController!{% endblock %}
 
 {% block body %}
-    Channel: {{ channel }}
 
-    <ul>
-        {% for message in messages %}
-            <li>{{ message.timestamp.format('d-m-Y H:i:s') }} - <strong>{{ message.user }}</strong>: {{ message.message }}</li>
-        {% endfor %}
-    </ul>
-    <div>
-        <p>{{ form(message_form) }}</p>
-    </div>
+    <div id="xhr-app"></div>
 
-    <a href="/">back</a>
-
-    <script type="javascript">setTimeout(function () { window.location.reload(); }, 6000); </script>
 {% endblock %}
