@@ -6,6 +6,7 @@ apt-get update
 apt-get install -y nodejs npm wget git
 npm install -g yarn
 yarn install
+yarn build
 
 wget -O /usr/local/bin/composer https://getcomposer.org/composer-stable.phar
 chmod a+x /usr/local/bin/composer
