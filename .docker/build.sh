@@ -3,7 +3,7 @@ set -e
 a2enmod rewrite
 
 apt-get update
-apt-get install -y nodejs npm wget git
+apt-get install -y nodejs npm wget git unzip
 npm install -g yarn
 yarn install
 yarn build
